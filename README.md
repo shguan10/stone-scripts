@@ -95,14 +95,24 @@ Start it, then start the run. It stops by itself after 7 minutes; to stop early,
 ffmpeg -v error -y -i run.mkv -vf "fps=1/5,scale=480:-1,drawtext=text='%{pts\:hms}':x=5:y=h-20:fontsize=16:fontcolor=yellow:box=1:boxcolor=black,tile=4x12" -frames:v 1 overview.png
 ```
 
-**Read the debug lines.** At `--max-size 1200` the frame is 1200×544, the five debug lines are
-`crop=760:98:0:0`, and your HP is `crop=380:18:0:526`. This stacks both, two frames a second, for
-the 7 seconds starting at 2:19 (`-ss 139`):
+**Read the debug lines.** Where the overlay sits in the 1200×544 frame varies between
+recordings (the text moved 130 px right between two runs of the same dungeon), so find the rows
+first. This grabs the top of the frame at 2:05, doubled, with a red line every 10 px:
 
 ```bash
-ffmpeg -v error -y -ss 139 -t 7 -i run.mkv -filter_complex "fps=2,split[a][b];[a]crop=760:98:0:0[t];[b]crop=380:18:0:526,pad=760:18[h];[t][h]vstack,scale=1140:-1,drawtext=text='+%{pts\:hms}':x=950:y=5:fontsize=18:fontcolor=yellow:box=1:boxcolor=black,tile=2x7" -frames:v 1 strip.png
+ffmpeg -v error -y -ss 125 -i run.mkv -vf "crop=800:110:0:0,scale=1600:-1,drawgrid=w=9999:h=20:color=red@0.6" -frames:v 1 rows.png
 ```
 
-Timestamps in a strip count from `-ss`. For a hit itself, `fps=10` on the whole frame shows which
-attack landed: the screen dims on the frame you take damage. The crops assume a 2400×1080 phone
-screen; on another, scale them to the recorded size (`ffprobe run.mkv`).
+Then crop those rows out of a stretch of video. In the last recording the hands were
+`crop=520:14:130:22` and `cast:` was `crop=300:14:130:100`; this shows both for every frame from
+2:01 to 2:06, numbered, so you can count how many frames an item was held:
+
+```bash
+ffmpeg -v error -y -ss 121 -t 5 -i run.mkv -filter_complex "fps=30,split[a][b];[a]crop=520:14:130:22[t];[b]crop=300:14:130:100[c];[t][c]hstack,drawtext=text='%{n}':x=790:y=0:fontsize=12:fontcolor=yellow:box=1:boxcolor=black,tile=2x75" -frames:v 1 strip.png
+```
+
+For a slower overview of the same lines, use `fps=2` and a longer `-t`; your HP is on the bottom
+row of the frame.
+
+Timestamps and frame numbers in a strip count from `-ss`. For a hit itself, `fps=10` on the whole frame shows which
+attack landed: the screen dims on the frame you take damage.
