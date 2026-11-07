@@ -18,9 +18,7 @@ var arms = ["skeleton arm", "skeleton_arm"]
 var fallbackWands = ["vigor wand", "wand"]
 
 // The Blade of the Fallen God's range
-// (Miraheze wiki). Beyond it the game
-// refuses the ability though it is off
-// cooldown.
+// (Miraheze wiki).
 var bladeRange = 11
 
 func Abilities()
@@ -42,7 +40,11 @@ func Abilities()
     var arm = gear.First(arms)
     ?arm
       gear.Cast("skeleton_arm", arm, "B")
-  ?foe.distance <= bladeRange
+  // Never against Palas (either stage):
+  // the ability summons Palas, so the game
+  // refuses it at any range.
+  ?foe.distance <= bladeRange &
+  ^foe ! skeleton_boss
     gear.Cast("blade", "blade", "B")
 
 // The counter wand does the damage. A boss
@@ -106,13 +108,6 @@ func Run()
   ^foe.distance > wandRange
     wandRange = foe.distance
   Abilities()
-  // Palas (both stages): with the Blade
-  // ready, go into its range to fire it.
-  ?foe = skeleton_boss &
-  ^foe.distance > bladeRange &
-  ^gear.Ready("blade", "blade")
-    travel.Rush()
-    return
   // A boss out of wand range is walked to
   // only until it is first hit. After
   // that the gap is usually a backflip,

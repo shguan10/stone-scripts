@@ -144,7 +144,7 @@ var pendStart = -999
 var last = ""
 
 // Owned, off cooldown and not waiting
-// out a refusal: worth going to fire.
+// out a refusal.
 func Ready(abil, crit)
   ?!Has(crit) | !item.CanActivate()
     return false
