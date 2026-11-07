@@ -71,3 +71,38 @@ phone's storage, as on desktop, is never read. Loading from a URL is the only wa
 
 Tested on Android (OnePlus Nord N200, Android 12) with game version 4.33.0. The comment trick
 matches what iOS players report.
+
+## Debugging a fight from a screen recording
+
+With `debug = true` in `main.txt`, the top-left of the screen shows what the script sees: both
+hands, the target's id/state/time, its debuffs, the last dodge and the last ability cast. Recording
+a run and reading those lines frame by frame is the fastest way to find out why a fight went wrong.
+Everything below runs on the computer the phone is plugged into (USB debugging on).
+
+**Record.** The phone's own `screenrecord` is Permission denied on this ROM, so use
+[scrcpy](https://github.com/Genymobile/scrcpy) (`sudo apt install scrcpy`; 1.25 tested):
+
+```bash
+timeout -s INT 420 scrcpy --no-display --record run.mkv --max-size 1200 --max-fps 30
+```
+
+Start it, then start the run. It stops by itself after 7 minutes; to stop early,
+`pkill -INT -x scrcpy`. Matroska rather than MP4 so an interrupted file is still playable.
+
+**Find the fight.** One frame every 5 seconds, timestamped, on one sheet:
+
+```bash
+ffmpeg -v error -y -i run.mkv -vf "fps=1/5,scale=480:-1,drawtext=text='%{pts\:hms}':x=5:y=h-20:fontsize=16:fontcolor=yellow:box=1:boxcolor=black,tile=4x12" -frames:v 1 overview.png
+```
+
+**Read the debug lines.** At `--max-size 1200` the frame is 1200×544, the five debug lines are
+`crop=760:98:0:0`, and your HP is `crop=380:18:0:526`. This stacks both, two frames a second, for
+the 7 seconds starting at 2:19 (`-ss 139`):
+
+```bash
+ffmpeg -v error -y -ss 139 -t 7 -i run.mkv -filter_complex "fps=2,split[a][b];[a]crop=760:98:0:0[t];[b]crop=380:18:0:526,pad=760:18[h];[t][h]vstack,scale=1140:-1,drawtext=text='+%{pts\:hms}':x=950:y=5:fontsize=18:fontcolor=yellow:box=1:boxcolor=black,tile=2x7" -frames:v 1 strip.png
+```
+
+Timestamps in a strip count from `-ss`. For a hit itself, `fps=10` on the whole frame shows which
+attack landed: the screen dims on the frame you take damage. The crops assume a 2400×1080 phone
+screen; on another, scale them to the recorded size (`ffprobe run.mkv`).
