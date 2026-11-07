@@ -113,10 +113,11 @@ func MarkTry(abil)
 // fails ("Fallo"). So the first frames
 // only equip, and the ability fires once
 // the game reports it ready. An item that
-// never gets ready (too few stars) is
-// given up on after 15 frames.
+// is held 15 frames and still not ready
+// (too few stars) is given up on.
 var pendAbil = ""
 var pendAt = -999
+var pendStart = -999
 
 // For debug: what Cast last did.
 var last = ""
@@ -143,10 +144,19 @@ func Cast(abil, crit, hand)
     castHand = hand
     castAt = totaltime
     return true
-  // Not in hand yet: keep equipping it.
+  // Not ready: keep equipping it. Only
+  // frames with it in hand count, since a
+  // swap can be held up (e.g. mid-dodge).
+  // Capped at 2 seconds overall, in case
+  // the in-hand test misses a name.
+  var held = item.left = crit | item.right = crit
   var waited = totaltime - pendAt
-  ?!string.Equals(pendAbil, abil) | waited > 60
+  ?!string.Equals(pendAbil, abil) |
+  ^totaltime - pendStart > 150
     pendAbil = abil
+    pendAt = totaltime
+    pendStart = totaltime
+  :?!held & totaltime - pendStart <= 60
     pendAt = totaltime
   :?waited > 15
     MarkTry(abil)
