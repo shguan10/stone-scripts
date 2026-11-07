@@ -31,11 +31,12 @@ func Abilities()
   // Skeleton Arm: whenever off cooldown,
   // at any range; whether it can fire is
   // the game's call, and Gear puts the
-  // item back if it cannot.
-  ?foe ! immune_to_physical
-    var arm = gear.First(arms)
-    ?arm
-      gear.Cast("skeleton_arm", arm, "B")
+  // item back if it cannot. Switched off
+  // for now.
+  //?foe ! immune_to_physical
+  //  var arm = gear.First(arms)
+  //  ?arm
+  //    gear.Cast("skeleton_arm", arm, "B")
   // Never against Palas (either stage):
   // the ability summons Palas, so the game
   // refuses it at any range.
