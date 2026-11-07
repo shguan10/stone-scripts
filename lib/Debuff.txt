@@ -1,7 +1,7 @@
 // Debuff: which debuff the target is
-// missing, and the wand that applies it.
+// missing, and the weapon that applies it.
 //
-// Only affixed wands apply debuffs:
+// Only affixed weapons apply debuffs:
 //   dP poison -> debuff_damage (weaken)
 //   dF fire   -> debuff_dot (burn)
 //   dI ice    -> debuff_chill (max 6)
@@ -10,9 +10,11 @@
 
 var gear = import lib/Gear
 
-var poisonWands = ["poison wand dp"]
-var fireWands = ["fire wand df"]
-var iceWands = ["ice wand di"]
+// Swords first: bosses are fought in
+// melee (see Melee); a wand still works.
+var poisonOnes = ["poison sword dp", "poison wand dp"]
+var fireOnes = ["fire sword df", "fire wand df"]
+var iceOnes = ["ice sword di", "ice wand di"]
 
 // Poena's mirror reflects debuffs back;
 // Dysangelos's protection blocks them.
@@ -28,7 +30,7 @@ func Can(id)
   return foe ! tag
 
 // Missing outright. Refreshing early
-// would swap wands mid-attack, which
+// would swap weapons mid-attack, which
 // costs more than the gap.
 func Needs(id)
   ?!Can(id)
@@ -39,13 +41,35 @@ func Needs(id)
 
 // Poison first, then burn, then chill.
 // "" when nothing is missing or no
-// owned wand applies what is.
-func Wand()
+// owned weapon applies what is. Skips
+// element skipEl: the other hand holds
+// it, and one item cannot be in both.
+func Weapon(skipEl)
   var w = ""
-  ?Needs("debuff_damage")
-    w = gear.First(poisonWands)
-  ?!w & Needs("debuff_dot")
-    w = gear.First(fireWands)
-  ?!w & Needs("debuff_chill")
-    w = gear.First(iceWands)
+  ?Needs("debuff_damage") &
+  ^!string.Equals(skipEl, "poison")
+    w = gear.First(poisonOnes)
+  ?!w & Needs("debuff_dot") &
+  ^!string.Equals(skipEl, "fire")
+    w = gear.First(fireOnes)
+  ?!w & Needs("debuff_chill") &
+  ^!string.Equals(skipEl, "ice")
+    w = gear.First(iceOnes)
   return w
+
+// Wands only, for ranged fights. Skips
+// element skipEl, as Weapon does.
+func Wand(skipEl)
+  ?Needs("debuff_damage") &
+  ^!string.Equals(skipEl, "poison") &
+  ^gear.Has("poison wand dp")
+    return "poison wand dp"
+  ?Needs("debuff_dot") &
+  ^!string.Equals(skipEl, "fire") &
+  ^gear.Has("fire wand df")
+    return "fire wand df"
+  ?Needs("debuff_chill") &
+  ^!string.Equals(skipEl, "ice") &
+  ^gear.Has("ice wand di")
+    return "ice wand di"
+  return ""

@@ -1,13 +1,17 @@
 // Combat: everything once a foe is close.
-// In priority order: offensive abilities,
-// the dash in, then a wand and a shield
-// of the element that counters the foe.
-// Against a boss the wand is first used
-// to keep it weakened, burned and chilled.
+// Offensive abilities first. Then a wand
+// and a shield of the element that
+// counters the foe; against a boss a
+// debuff wand can take the shield's place.
+// Crossbows and melee (see Melee) are
+// switched off for now: the calls are
+// commented out in Run. The dashing
+// shields belong to melee only.
 
 var gear = import lib/Gear
 var element = import lib/Element
 var debuff = import lib/Debuff
+var melee = import lib/Melee
 
 var arms = ["skeleton arm", "skeleton_arm"]
 var fallbackWands = ["vigor wand", "wand"]
@@ -18,8 +22,10 @@ func Abilities()
   // Plague Wand: weaken, if not on yet.
   ?foe = boss & debuff.Needs("debuff_damage")
     gear.Cast("wand_poison", "poison wand", "L")
-  // Feeble. Nagaraja cannot be masked.
-  ?foe ! nagaraja & foe.distance <= 10
+  // Feeble, on bosses only. Nagaraja
+  // cannot be masked. No range limit:
+  // wands fight from beyond melee range.
+  ?foe = boss & foe ! nagaraja
     gear.Cast("mask", "mask", "R")
   ?foe.distance > 3 & foe.distance < 9 &
   ^foe ! immune_to_physical
@@ -28,36 +34,34 @@ func Abilities()
       gear.Cast("skeleton_arm", arm, "B")
   gear.Cast("blade", "blade", "B")
 
-// The shields dash to the foe on their
-// own when held 11-16 away. Bashing also
-// stuns, so it goes first.
-func DashIn()
-  ?foe.distance < 11 | foe.distance > 16
-    return
-  ?item.GetCooldown("bash") <= 0
-    ?gear.Has("bashing shield")
-      gear.R("bashing shield")
-      return
-  ?item.GetCooldown("dash") <= 0
-    ?gear.Has("dashing shield")
-      gear.R("dashing shield")
-
-func Weapons()
+// The counter wand does the damage. A boss
+// missing a debuff gets the wand that
+// applies it in place of the shield, of a
+// different element (one item cannot be
+// in both hands).
+func Ranged()
   var el = element.Best()
   var wand = ""
+  var wandEl = ""
   var c = ""
-  ?foe = boss
-    wand = debuff.Wand()
-  ?!wand & el
+  ?el
     c = el + " wand"
     ?gear.Has(c)
       wand = c
+      wandEl = el
   ?!wand
     wand = gear.First(fallbackWands)
+    ?string.IndexOf(wand, "vigor") = 0
+      wandEl = "vigor"
   ?wand
     gear.L(wand)
-  // Plain shield: the dashing ones are
-  // DashIn's, and would dash on their own.
+  ?foe = boss
+    c = debuff.Wand(wandEl)
+    ?string.Size(c) > 0
+      gear.R(c)
+      return
+  // Plain shield: the dashing ones would
+  // dash in on their own.
   var shield = "shield -dashing -bashing"
   ?el
     c = el + " shield -dashing -bashing"
@@ -65,7 +69,42 @@ func Weapons()
       shield = c
   gear.R(shield)
 
+// Two-handed, so both hands or nothing,
+// and no debuffs: there is no shield to
+// swap out. Without one, Ranged.
+func Crossbow(el)
+  var c = "crossbow"
+  ?el
+    c = el + " crossbow"
+  // A chilling one first, if there is one.
+  ?gear.Has(c + " di")
+    c = c + " di"
+  ?gear.Has(c)
+    gear.Both(c)
+  :
+    Ranged()
+
 func Run()
   Abilities()
-  DashIn()
-  Weapons()
+  Ranged()
+  // Crossbows, for when they come back:
+  //?foe = boss
+  //  Crossbow(element.Best())
+  //:
+  //  Ranged()
+  // Melee, for when it comes back:
+  // Bolesh stays on an ice crossbow (she
+  // takes 1.5x from ranged); the Bronze
+  // Guardian is meleed only while his
+  // hammer is down (state 33).
+  //?foe.id = spider_boss
+  //  Crossbow("ice")
+  //:?foe.id = bronze_guardian
+  //  ?foe.state = 33
+  //    melee.Run()
+  //  :
+  //    Crossbow("aether")
+  //:?foe = boss
+  //  melee.Run()
+  //:
+  //  Ranged()

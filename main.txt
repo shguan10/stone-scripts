@@ -19,9 +19,13 @@ var debug = true
   equipR sh *0*
   equipR @item.right@
 
+// A boss is safe only while asleep or
+// revealing itself (state 0): state 1 is
+// already the idle right before the
+// first attack.
 var safe
 safe = !foe | (foe.distance>20 & foe ! boss)
-^| (foe = boss & foe.state<=1 & hp = maxhp)
+^| (foe = boss & foe.state=0 & hp = maxhp)
 
 // Highest priority first: each hand goes
 // to the first module that asks for it.
@@ -35,9 +39,15 @@ gear.Hold()
   combat.Run()
 gear.Apply()
 
+?debug
+  >`0,1,L @item.left@ / R @item.right@
+  >`0,5,cast: @gear.last@
 ?debug & foe
-  >`0,1,@foe.id@ s@foe.state@ t@foe.time@
-  >`0,2,@foe.debuffs.string@
+  >`0,2,@foe.id@ s@foe.state@ t@foe.time@
+  ?foe.debuffs.count > 0
+    >`0,3,@foe.debuffs.string@
+  ?foe = boss
+    >`0,4,dodge: @bosses.info@
 
 //?foe=boss & foe.hp<foe.maxhp
   //activate potion
