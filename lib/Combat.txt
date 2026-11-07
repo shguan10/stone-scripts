@@ -23,9 +23,9 @@ func Abilities()
   ?foe = boss & debuff.Needs("debuff_damage")
     gear.Cast("wand_poison", "poison wand", "L")
   // Feeble, on bosses only. Nagaraja
-  // cannot be masked.
-  ?foe = boss & foe ! nagaraja &
-  ^foe.distance <= 10
+  // cannot be masked. No range limit:
+  // wands fight from beyond melee range.
+  ?foe = boss & foe ! nagaraja
     gear.Cast("mask", "mask", "R")
   ?foe.distance > 3 & foe.distance < 9 &
   ^foe ! immune_to_physical
