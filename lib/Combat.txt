@@ -1,10 +1,12 @@
 // Combat: everything once a foe is close.
 // Offensive abilities first. Then bosses
-// are fought in melee (see Melee) and
-// everything else at range, with a wand
-// and a shield of the element that
-// counters the foe. The dashing shields
-// belong to melee only.
+// get a crossbow of the element that
+// counters them, and everything else a
+// wand and a shield of that element.
+// Melee (see Melee) is switched off for
+// now: the calls are commented out in
+// Run. The dashing shields belong to
+// melee only.
 
 var gear = import lib/Gear
 var element = import lib/Element
@@ -34,7 +36,9 @@ func Ranged()
   var el = element.Best()
   var wand = ""
   var c = ""
-  ?el
+  ?foe = boss
+    wand = debuff.Wand()
+  ?!wand & el
     c = el + " wand"
     ?gear.Has(c)
       wand = c
@@ -52,11 +56,14 @@ func Ranged()
   gear.R(shield)
 
 // Two-handed, so both hands or nothing.
+// Without one, a wand and shield.
 func Crossbow(el)
-  // A chilling one first, if there is one.
-  var c = el + " crossbow di"
-  ?!gear.Has(c)
+  var c = "crossbow"
+  ?el
     c = el + " crossbow"
+  // A chilling one first, if there is one.
+  ?gear.Has(c + " di")
+    c = c + " di"
   ?gear.Has(c)
     gear.Both(c)
   :
@@ -64,18 +71,23 @@ func Crossbow(el)
 
 func Run()
   Abilities()
-  // Bolesh takes 1.5x from ranged.
-  ?foe.id = spider_boss
-    Crossbow("ice")
-  // Bronze Guardian: melee only while his
-  // hammer is down (state 33); his swing
-  // is dodged in Bosses.
-  :?foe.id = bronze_guardian
-    ?foe.state = 33
-      melee.Run()
-    :
-      Crossbow("aether")
-  :?foe = boss
-    melee.Run()
+  ?foe = boss
+    Crossbow(element.Best())
   :
     Ranged()
+  // Melee, for when it comes back:
+  // Bolesh stays on an ice crossbow (she
+  // takes 1.5x from ranged); the Bronze
+  // Guardian is meleed only while his
+  // hammer is down (state 33).
+  //?foe.id = spider_boss
+  //  Crossbow("ice")
+  //:?foe.id = bronze_guardian
+  //  ?foe.state = 33
+  //    melee.Run()
+  //  :
+  //    Crossbow("aether")
+  //:?foe = boss
+  //  melee.Run()
+  //:
+  //  Ranged()

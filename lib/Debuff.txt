@@ -56,3 +56,17 @@ func Weapon(skipEl)
   ^!string.Equals(skipEl, "ice")
     w = gear.First(iceOnes)
   return w
+
+// Wands only, for when a crossbow or wand
+// fight cannot take a sword.
+func Wand()
+  ?Needs("debuff_damage") &
+  ^gear.Has("poison wand dp")
+    return "poison wand dp"
+  ?Needs("debuff_dot") &
+  ^gear.Has("fire wand df")
+    return "fire wand df"
+  ?Needs("debuff_chill") &
+  ^gear.Has("ice wand di")
+    return "ice wand di"
+  return ""
