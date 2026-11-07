@@ -12,7 +12,7 @@ from this repo with `import`.
 | `lib/Bosses.txt` | Mind Stone backflips out of each boss's avoidable attacks. Frame timings are community values; recalibrate here. |
 | `lib/Harvest.txt` | Hatchet for trees, Shovel for the rest, and their abilities only while harvesting. |
 | `lib/Travel.txt` | Out of combat: Quarterstaff dash, else Triskelion + Ouroboros (Star Stone near pickups). |
-| `lib/Combat.txt` | Mask, Skeleton Arm and Blade abilities. A wand and shield of the countering element; against a boss missing a debuff, the wand that applies it replaces the shield. Crossbows and melee are commented out in `Run`. |
+| `lib/Combat.txt` | Mask (bosses only), Skeleton Arm and Blade abilities. A wand and shield of the countering element; against a boss missing a debuff, the wand that applies it replaces the shield. Crossbows and melee are commented out in `Run`. |
 | `lib/Melee.txt` | Boss fights: Bashing (else Dashing) Shield to close in, then each boss's best melee weapons (the list is at the top of the file). Two hands never hold the same item, so the second hand gets a different element. |
 | `lib/Element.txt` | Which element beats the target, else the location. |
 | `lib/Debuff.txt` | Against bosses: the weapon (sword, else wand) that applies whichever of weaken, burn and chill is missing. |
