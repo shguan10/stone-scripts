@@ -30,10 +30,15 @@ var castAt = -999
 var triedIds = []
 var triedAt = []
 
-// Abilities that were never ready, given
-// up on until the next location: each
-// retry takes the hand off the shield.
-var gaveUp = []
+// Abilities that were not ready when
+// tried, and the frame each may be tried
+// again. Some have conditions besides the
+// cooldown (the Blade fires once, then is
+// not ready again for a long while), and
+// each try takes the wand or shield off.
+var retryGap = 300
+var waitIds = []
+var waitUntil = []
 
 func Reset()
   toL = ""
@@ -46,7 +51,8 @@ func Reset()
   ?loc.begin | loc.loop
     triedIds.Clear()
     triedAt.Clear()
-    gaveUp.Clear()
+    waitIds.Clear()
+    waitUntil.Clear()
     castAt = -999
 
 // Owned, or already in a hand.
@@ -108,6 +114,14 @@ func MarkTry(abil)
   :
     triedAt.Emplace(i, totaltime)
 
+func Defer(abil)
+  var i = waitIds.IndexOf(abil)
+  ?i < 0
+    waitIds.Add(abil)
+    waitUntil.Add(totaltime + retryGap)
+  :
+    waitUntil.Emplace(i, totaltime + retryGap)
+
 // Equip crit and fire its ability, if
 // the hand is free and it is off
 // cooldown. abil is the cooldown id
@@ -119,9 +133,9 @@ func MarkTry(abil)
 // fails ("Fallo"). So the first frames
 // only equip, and the ability fires once
 // the game reports it ready. An item that
-// is held 15 frames and still not ready
-// (too few stars) is given up on until
-// the next location.
+// is held 5 frames and still not ready
+// goes back, and is tried again after
+// retryGap frames.
 var pendAbil = ""
 var pendAt = -999
 var pendStart = -999
@@ -132,8 +146,10 @@ var last = ""
 func Cast(abil, crit, hand)
   ?!Free(hand) | !Has(crit)
     return false
-  ?gaveUp.IndexOf(abil) >= 0
-    return false
+  var wi = waitIds.IndexOf(abil)
+  ?wi >= 0
+    ?totaltime < waitUntil[wi]
+      return false
   ?item.GetCooldown(abil) > 0
     return false
   ?!item.CanActivate()
@@ -167,9 +183,9 @@ func Cast(abil, crit, hand)
     pendStart = totaltime
   :?!held & totaltime - pendStart <= 60
     pendAt = totaltime
-  :?waited > 15
+  :?waited > 5
     MarkTry(abil)
-    gaveUp.Add(abil)
+    Defer(abil)
     pendAbil = ""
     last = abil + " never ready t" + totaltime
   return true

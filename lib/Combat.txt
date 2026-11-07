@@ -28,16 +28,15 @@ func Abilities()
   // wands fight from beyond melee range.
   ?foe = boss & foe ! nagaraja
     gear.Cast("mask", "mask", "R")
-  ?foe.distance > 3 & foe.distance < 9 &
-  ^foe ! immune_to_physical
+  // Skeleton Arm and Blade: whenever off
+  // cooldown, at any range; whether one
+  // can fire is the game's call, and Gear
+  // puts the item back if it cannot.
+  ?foe ! immune_to_physical
     var arm = gear.First(arms)
     ?arm
       gear.Cast("skeleton_arm", arm, "B")
-  // Blade of the Fallen God: off. Its
-  // ability was never ready in recorded
-  // fights, so each try only walked with
-  // the blade in place of wand and shield.
-  //gear.Cast("blade", "blade", "B")
+  gear.Cast("blade", "blade", "B")
 
 // The counter wand does the damage. A boss
 // missing a debuff gets the wand that
