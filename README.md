@@ -12,8 +12,8 @@ from this repo with `import`.
 | `lib/Bosses.txt` | Mind Stone backflips out of each boss's avoidable attacks. Frame timings are community values; recalibrate here. |
 | `lib/Harvest.txt` | Hatchet for trees, Shovel for the rest, and their abilities only while harvesting. |
 | `lib/Travel.txt` | Out of combat: Quarterstaff dash, else Triskelion + Ouroboros (Star Stone near pickups). |
-| `lib/Combat.txt` | Mask, Skeleton Arm and Blade abilities. Bosses go to `Melee`; everything else is fought at range with a wand and shield of the countering element. |
-| `lib/Melee.txt` | Boss fights: Bashing (else Dashing) Shield to close in, then each boss's best melee weapons (the list is at the top of the file). |
+| `lib/Combat.txt` | Mask, Skeleton Arm and Blade abilities. Bolesh gets an ice crossbow and the Bronze Guardian an aether one (melee only while his hammer is down); other bosses go to `Melee`; everything else is fought at range with a wand and shield of the countering element. |
+| `lib/Melee.txt` | Boss fights: Bashing (else Dashing) Shield to close in, then each boss's best melee weapons (the list is at the top of the file). Two hands never hold the same item, so the second hand gets a different element. |
 | `lib/Element.txt` | Which element beats the target, else the location. |
 | `lib/Debuff.txt` | Against bosses: the weapon (sword, else wand) that applies whichever of weaken, burn and chill is missing. |
 | `UI/MindstoneButton.txt`, `Cosmetics/WitchBroom.txt`, `Hats/WitchHat.txt` | Copies of the official library scripts `main.txt` imports, taken unchanged from `stonestoryrpg.com/stonescript/`. They have to live here because once the game is pointed at this repo, *every* `import` resolves against it. They do not update themselves; re-download them to pick up upstream changes. |

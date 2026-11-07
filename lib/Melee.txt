@@ -1,51 +1,64 @@
-// Melee: the boss-fight strategy. Close
-// in with the Bashing Shield (Dashing if
-// it is on cooldown), then fight with
-// the boss's best melee weapons.
+// Melee: how most bosses are fought.
+// Close in with the Bashing Shield
+// (Dashing if it is on cooldown), then
+// fight with the boss's best weapons.
 //
 // Per boss (community scripts):
 //   any armored boss: hammers to strip
 //     the armor, then swords
 //   Dysangelos P1, Xyloalgia (stone):
-//     chill (ice dI) swords, else fire
+//     chill (ice dI) sword, else fire
 //   Dysangelos P2: counter the arm in use
 //   Dysangelos P3: an element he has not
 //     adapted to (adaptive_defense_*)
 //   Poena: stone + aether hammers, to
 //     stunlock her; no debuffs or vigor,
 //     which her mirror turns on us
-//   Bolesh, Nagaraja: ice swords
-//   Angry Shroom: poison swords
-//   Pallas: vigor swords; vigor wands
+//   Nagaraja: ice sword
+//   Angry Shroom: poison sword
+//   Pallas: vigor sword; vigor wand
 //     while his adds are up
-//   Bronze Guardian: aether hammers on the
-//     helmet, then aether dU swords
-//   Hrimnir: fire swords, which also crack
+//   Bronze Guardian, while his hammer is
+//     down (Combat): aether hammers on the
+//     helmet, then an aether dU sword
+//   Hrimnir: fire sword, which also cracks
 //     his ice armor; fire wand during his
 //     blows, which cannot be dodged
-// A debuff weapon (Debuff) takes the left
-// hand while the boss is missing one.
+// Bolesh is fought at range (Combat).
+//
+// Two hands cannot hold the same item, so
+// the right hand gets a different element:
+// a weapon that applies a debuff the boss
+// is missing (Debuff), else a hammer of
+// another element on armor, else the
+// counter shield.
 
 var gear = import lib/Gear
 var element = import lib/Element
 var debuff = import lib/Debuff
 
+// The main weapon and its element; wantR
+// only when a boss needs a specific pair.
 var wantL = ""
 var wantR = ""
+var mainEl = ""
 
 func Crit(el, kind)
   ?el
     return el + " " + kind
   return kind
 
-func Pair(el, kind)
+func Main(el, kind)
+  mainEl = el
   wantL = Crit(el, kind)
-  wantR = wantL
 
-// Heavy Hammer is two-handed; these are
-// the one-handed ones.
+// Heavy Hammer is two-handed; the
+// one-handed ones are "-heavy". The
+// second is any other element's.
 func Hammers(el)
-  Pair(el, "hammer -heavy")
+  Main(el, "hammer -heavy")
+  ?el
+    wantR = "hammer -heavy -" + el
 
 func DysWeakness()
   var b = foe.buffs.string
@@ -64,8 +77,11 @@ func ChillOrFire()
     return "ice"
   return "fire"
 
-// Sets wantL and wantR.
+// Sets wantL, wantR and mainEl.
 func Pick()
+  wantL = ""
+  wantR = ""
+  mainEl = ""
   var fid = foe.id
   var el = element.Best()
   ?fid = poena
@@ -74,18 +90,18 @@ func Pick()
     return
   ?fid = yeti
     ?foe.state = 133
-      Pair("fire", "wand")
+      Main("fire", "wand")
     :
-      Pair("fire", "sword")
+      Main("fire", "sword")
     return
   ?fid = bronze_guardian
     ?foe.armor > 0
       Hammers("aether")
     :
-      Pair("aether", "sword du")
+      Main("aether", "sword du")
     return
   ?fid = skeleton_boss_stage_2 & foe.count > 1
-    Pair("vigor", "wand")
+    Main("vigor", "wand")
     return
   ?fid = dysangelos_perfected
     el = DysWeakness()
@@ -94,26 +110,19 @@ func Pick()
   ?foe.armor > 0
     Hammers(el)
   :
-    Pair(el, "sword")
+    Main(el, "sword")
 
-// Both hands want the same kind: that
-// needs two copies, else the right hand
-// takes the counter shield.
 func Wield()
   var l = wantL
-  ?foe.id ! poena
-    var d = debuff.Weapon()
-    ?d
-      l = d
   ?!gear.Has(l)
     l = ""
   var r = wantR
-  var same = string.Equals(l, r)
-  ?!gear.Has(r) | same & item.GetCount(r) < 2
+  ?r & !gear.Has(r)
     r = ""
+  ?!r & foe.id ! poena
+    r = debuff.Weapon(mainEl)
   ?!r
-    var el = element.Best()
-    r = Crit(el, "shield -dashing -bashing")
+    r = Crit(element.Best(), "shield -dashing -bashing")
     ?!gear.Has(r)
       r = "shield -dashing -bashing"
   ?l

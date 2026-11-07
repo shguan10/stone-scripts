@@ -51,9 +51,31 @@ func Ranged()
       shield = c
   gear.R(shield)
 
+// Two-handed, so both hands or nothing.
+func Crossbow(el)
+  // A chilling one first, if there is one.
+  var c = el + " crossbow di"
+  ?!gear.Has(c)
+    c = el + " crossbow"
+  ?gear.Has(c)
+    gear.Both(c)
+  :
+    Ranged()
+
 func Run()
   Abilities()
-  ?foe = boss
+  // Bolesh takes 1.5x from ranged.
+  ?foe.id = spider_boss
+    Crossbow("ice")
+  // Bronze Guardian: melee only while his
+  // hammer is down (state 33); his swing
+  // is dodged in Bosses.
+  :?foe.id = bronze_guardian
+    ?foe.state = 33
+      melee.Run()
+    :
+      Crossbow("aether")
+  :?foe = boss
     melee.Run()
   :
     Ranged()

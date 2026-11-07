@@ -41,13 +41,18 @@ func Needs(id)
 
 // Poison first, then burn, then chill.
 // "" when nothing is missing or no
-// owned weapon applies what is.
-func Weapon()
+// owned weapon applies what is. Skips
+// element skipEl: the other hand holds
+// it, and one item cannot be in both.
+func Weapon(skipEl)
   var w = ""
-  ?Needs("debuff_damage")
+  ?Needs("debuff_damage") &
+  ^!string.Equals(skipEl, "poison")
     w = gear.First(poisonOnes)
-  ?!w & Needs("debuff_dot")
+  ?!w & Needs("debuff_dot") &
+  ^!string.Equals(skipEl, "fire")
     w = gear.First(fireOnes)
-  ?!w & Needs("debuff_chill")
+  ?!w & Needs("debuff_chill") &
+  ^!string.Equals(skipEl, "ice")
     w = gear.First(iceOnes)
   return w
