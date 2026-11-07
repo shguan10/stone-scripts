@@ -1,12 +1,12 @@
 // Combat: everything once a foe is close.
-// Offensive abilities first. Then bosses
-// get a crossbow of the element that
-// counters them, and everything else a
-// wand and a shield of that element.
-// Melee (see Melee) is switched off for
-// now: the calls are commented out in
-// Run. The dashing shields belong to
-// melee only.
+// Offensive abilities first. Then a wand
+// and a shield of the element that
+// counters the foe; against a boss a
+// debuff wand can take the shield's place.
+// Crossbows and melee (see Melee) are
+// switched off for now: the calls are
+// commented out in Run. The dashing
+// shields belong to melee only.
 
 var gear = import lib/Gear
 var element = import lib/Element
@@ -84,10 +84,12 @@ func Crossbow(el)
 
 func Run()
   Abilities()
-  ?foe = boss
-    Crossbow(element.Best())
-  :
-    Ranged()
+  Ranged()
+  // Crossbows, for when they come back:
+  //?foe = boss
+  //  Crossbow(element.Best())
+  //:
+  //  Ranged()
   // Melee, for when it comes back:
   // Bolesh stays on an ice crossbow (she
   // takes 1.5x from ranged); the Bronze
