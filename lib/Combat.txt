@@ -96,9 +96,15 @@ func Run()
   ^foe.distance > wandRange
     wandRange = foe.distance
   Abilities()
-  // A boss out of wand range: travel to it.
-  ?foe = boss & foe.distance > wandRange
-    travel.Run()
+  // A boss out of wand range is walked to
+  // only until it is first hit. After
+  // that the gap is usually a backflip,
+  // and walking it with the stones in
+  // hand would drop the shield. Never a
+  // dash: it lands in melee range.
+  ?foe = boss & foe.distance > wandRange &
+  ^foe.hp = foe.maxhp
+    travel.Walk()
     return
   Ranged()
   // Crossbows, for when they come back:

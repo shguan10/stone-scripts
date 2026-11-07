@@ -7,7 +7,11 @@
 
 var gear = import lib/Gear
 
+// Not at a boss: the dash ends in its
+// melee range, and fights stay ranged.
 func Dash()
+  ?foe = boss
+    return false
   ?foe & foe.distance <= 17
     return false
   return gear.Cast("quarterstaff", "quarterstaff", "B")

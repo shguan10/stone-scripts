@@ -30,6 +30,11 @@ var castAt = -999
 var triedIds = []
 var triedAt = []
 
+// Abilities that were never ready, given
+// up on until the next location: each
+// retry takes the hand off the shield.
+var gaveUp = []
+
 func Reset()
   toL = ""
   toR = ""
@@ -41,6 +46,7 @@ func Reset()
   ?loc.begin | loc.loop
     triedIds.Clear()
     triedAt.Clear()
+    gaveUp.Clear()
     castAt = -999
 
 // Owned, or already in a hand.
@@ -114,7 +120,8 @@ func MarkTry(abil)
 // only equip, and the ability fires once
 // the game reports it ready. An item that
 // is held 15 frames and still not ready
-// (too few stars) is given up on.
+// (too few stars) is given up on until
+// the next location.
 var pendAbil = ""
 var pendAt = -999
 var pendStart = -999
@@ -124,6 +131,8 @@ var last = ""
 
 func Cast(abil, crit, hand)
   ?!Free(hand) | !Has(crit)
+    return false
+  ?gaveUp.IndexOf(abil) >= 0
     return false
   ?item.GetCooldown(abil) > 0
     return false
@@ -160,6 +169,7 @@ func Cast(abil, crit, hand)
     pendAt = totaltime
   :?waited > 15
     MarkTry(abil)
+    gaveUp.Add(abil)
     pendAbil = ""
     last = abil + " never ready t" + totaltime
   return true
