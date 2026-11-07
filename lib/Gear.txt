@@ -1,0 +1,157 @@
+// Gear: collects one frame's equip and
+// activate requests, then issues them.
+//
+// The first request for a hand wins, so
+// callers ask in priority order and a
+// lower-priority module can never undo
+// a dodge or interrupt a cast. Hands:
+// "L", "R", or "B" for a two-handed item.
+
+var toL = ""
+var toR = ""
+var toB = ""
+var claimL = false
+var claimR = false
+var actL = false
+var actR = false
+
+// The cast in progress. An item with a
+// cast time loses its cast (but keeps
+// the cooldown) if it is unequipped
+// while its hand is in state 2.
+var castCrit = ""
+var castHand = ""
+var castAt = -999
+
+// When each ability was last tried. An
+// ability that never starts (item too
+// low a star, wrong id) would otherwise
+// hold the hand every frame.
+var triedIds = []
+var triedAt = []
+
+func Reset()
+  toL = ""
+  toR = ""
+  toB = ""
+  claimL = false
+  claimR = false
+  actL = false
+  actR = false
+  ?loc.begin | loc.loop
+    triedIds.Clear()
+    triedAt.Clear()
+    castAt = -999
+
+// Owned, or already in a hand.
+func Has(crit)
+  ?item.GetCount(crit) > 0
+    return true
+  return item.left = crit | item.right = crit
+
+// The first criteria in the list that
+// matches an owned item, else "".
+func First(list)
+  for c : list
+    ?Has(c)
+      return c
+  return ""
+
+func Free(hand)
+  ?hand = "B"
+    return !claimL & !claimR
+  ?hand = "L"
+    return !claimL
+  return !claimR
+
+func Take(hand, crit)
+  ?!Free(hand)
+    return false
+  ?hand = "B"
+    claimL = true
+    claimR = true
+    toB = crit
+  :?hand = "L"
+    claimL = true
+    toL = crit
+  :
+    claimR = true
+    toR = crit
+  return true
+
+func L(crit)
+  return Take("L", crit)
+
+func R(crit)
+  return Take("R", crit)
+
+func Both(crit)
+  return Take("B", crit)
+
+func LastTry(abil)
+  var i = triedIds.IndexOf(abil)
+  ?i < 0
+    return -999
+  return triedAt[i]
+
+func MarkTry(abil)
+  var i = triedIds.IndexOf(abil)
+  ?i < 0
+    triedIds.Add(abil)
+    triedAt.Add(totaltime)
+  :
+    triedAt.Emplace(i, totaltime)
+
+// Equip crit and fire its ability, if
+// the hand is free and it is off
+// cooldown. abil is the cooldown id
+// (manual, Appendix A), not the name.
+func Cast(abil, crit, hand)
+  ?!Free(hand) | !Has(crit)
+    return false
+  ?item.GetCooldown(abil) > 0
+    return false
+  ?!item.CanActivate()
+    return false
+  ?totaltime - LastTry(abil) < 90
+    return false
+  Take(hand, crit)
+  ?hand = "L"
+    actL = true
+  :
+    actR = true
+  MarkTry(abil)
+  castCrit = crit
+  castHand = hand
+  castAt = totaltime
+  return true
+
+// Keep the last cast's item equipped for
+// a few frames after activation (the
+// Quarterstaff's dash needs it) and for
+// as long as it is still winding up.
+func Continue()
+  var since = totaltime - castAt
+  ?since > 90
+    return false
+  ?since <= 3
+    return Take(castHand, castCrit)
+  var st = item.right.state
+  ?castHand = "L"
+    st = item.left.state
+  ?st = 2
+    return Take(castHand, castCrit)
+  return false
+
+func Apply()
+  ?toB
+    equip @toB@
+  :
+    ?toL
+      equipL @toL@
+    ?toR
+      equipR @toR@
+  ?actL
+    activate L
+  ?actR
+    activate R

@@ -1,0 +1,21 @@
+// Harvest: the right tool for what is
+// in front of us, and its ability only
+// while harvesting. Trees take the
+// Hatchet (right hand); everything else
+// (Boulders) takes the two-handed Shovel.
+// Returns true while harvesting.
+
+var gear = import lib/Gear
+
+func Run()
+  ?!harvest | harvest.distance >= 10
+    return false
+  ?harvest = Tree
+    ?harvest.distance <= 4
+      gear.Cast("hatchet", "hatchet", "R")
+    gear.R("hatchet")
+  :
+    ?harvest.distance < 5
+      gear.Cast("shovel", "shovel", "B")
+    gear.Both("shovel")
+  return true

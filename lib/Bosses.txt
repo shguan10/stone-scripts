@@ -1,0 +1,109 @@
+// Bosses: backflip out of the attacks
+// that can be avoided, by equipping the
+// Mind Stone just before they land.
+//
+// Frame numbers are community values
+// (livercat/scribble, alexbarker234,
+// Fuzznimp, the Miraheze wiki) for the
+// unchilled boss; every chill stack adds
+// ~7 frames to each state. Turn on debug
+// in main to see state and time, and
+// recalibrate here if a dodge is early
+// or late. Attacks not listed (Hrimnir's
+// blows, Dysangelos P2's arms) cannot be
+// dodged; the counter shield takes them.
+
+var gear = import lib/Gear
+
+func Chill()
+  return 7 * foe.debuffs.GetCount("debuff_chill")
+
+// Inside a 6-frame window from frame t
+// of the given state.
+func At(st, t)
+  ?foe.state ! st
+    return false
+  var from = t + Chill()
+  return foe.time >= from & foe.time <= from + 6
+
+func Mind()
+  ?item.GetCooldown("mind") > 0
+    return false
+  // A backflip into the screen edge
+  // goes nowhere.
+  ?screen.FromWorldX(pos.x) <= 5
+    return false
+  return gear.L("mind")
+
+// Returns true if this frame dodges.
+func Dodge()
+  ?foe ! boss
+    return false
+  var fid = foe.id
+  // Dysangelos (Rocky)
+  ?fid = dysangelos_bearer
+    // Eye laser; quicker from 11 stars.
+    ?loc.stars >= 11 & At(32, 22)
+      return Mind()
+    ?loc.stars < 11 & At(32, 28)
+      return Mind()
+    return false
+  ?fid = dysangelos_perfected
+    ?At(115, 60)
+      return Mind()
+    // Stun slam: the 32 that does 1 damage.
+    ?foe.damage <= 1 & At(32, 58)
+      return Mind()
+    return false
+  // Xyloalgia (Deadwood). Poena has no
+  // dodge here; Debuff stops feeding her
+  // mirror.
+  ?fid = tree_boss
+    ?At(32, 31)
+      return Mind()
+    return false
+  // Bolesh (Caves): the bite.
+  ?fid = spider_boss
+    ?At(142, 18)
+      return Mind()
+    return false
+  // Angry Shroom (Mushroom): the punch.
+  // Morel first: its id contains the
+  // other's.
+  ?fid = mushroom_boss_fat
+    ?At(32, 26)
+      return Mind()
+    return false
+  ?fid = mushroom_boss
+    ?At(32, 46)
+      return Mind()
+    return false
+  // Pallas (Halls): phase 2 first, for
+  // the same reason.
+  ?fid = skeleton_boss_stage_2
+    ?At(32, 17)
+      return Mind()
+    return false
+  ?fid = skeleton_boss
+    ?At(32, 68)
+      return Mind()
+    return false
+  // Bronze Guardian (Mine): the hammer,
+  // incl. the 5-star bomb hammer. Immune
+  // to chill, so no drift.
+  ?fid = bronze_guardian
+    ?At(32, 30)
+      return Mind()
+    return false
+  // Hrimnir (Icy): the snowball, close up.
+  ?fid = yeti
+    ?foe.distance <= 6 & At(32, 23)
+      return Mind()
+    return false
+  // Nagaraja (Temple): the brick, which
+  // wipes all armor.
+  ?fid = nagaraja
+    ?At(112, 45)
+      return Mind()
+    return false
+  return false

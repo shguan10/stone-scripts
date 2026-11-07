@@ -1,0 +1,51 @@
+// Debuff: which debuff the target is
+// missing, and the wand that applies it.
+//
+// Only affixed wands apply debuffs:
+//   dP poison -> debuff_damage (weaken)
+//   dF fire   -> debuff_dot (burn)
+//   dI ice    -> debuff_chill (max 6)
+// The Cultist Mask's Feeble is cast as
+// an ability, in Combat.
+
+var gear = import lib/Gear
+
+var poisonWands = ["poison wand dp"]
+var fireWands = ["fire wand df"]
+var iceWands = ["ice wand di"]
+
+// Poena's mirror reflects debuffs back;
+// Dysangelos's protection blocks them.
+func Blocked()
+  ?foe.buffs.string = poena_mirror
+    return true
+  return foe.buffs.string = buff_protection
+
+func Can(id)
+  ?Blocked()
+    return false
+  var tag = "immune_to_" + id
+  return foe ! tag
+
+// Missing outright. Refreshing early
+// would swap wands mid-attack, which
+// costs more than the gap.
+func Needs(id)
+  ?!Can(id)
+    return false
+  ?id = "debuff_chill"
+    return foe.debuffs.GetCount(id) < 6
+  return foe.debuffs.GetCount(id) = 0
+
+// Poison first, then burn, then chill.
+// "" when nothing is missing or no
+// owned wand applies what is.
+func Wand()
+  var w = ""
+  ?Needs("debuff_damage")
+    w = gear.First(poisonWands)
+  ?!w & Needs("debuff_dot")
+    w = gear.First(fireWands)
+  ?!w & Needs("debuff_chill")
+    w = gear.First(iceWands)
+  return w

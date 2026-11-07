@@ -7,7 +7,14 @@ from this repo with `import`.
 
 | File | |
 |---|---|
-| `main.txt` | The Mind Stone script itself. |
+| `main.txt` | The Mind Stone script itself: runs the modules below in priority order. Set `debug` to print the target's id, state and time. |
+| `lib/Gear.txt` | One frame's equip and ability requests. The first module to ask for a hand gets it; `Cast` keeps an ability's item held while it winds up. |
+| `lib/Bosses.txt` | Mind Stone backflips out of each boss's avoidable attacks. Frame timings are community values; recalibrate here. |
+| `lib/Harvest.txt` | Hatchet for trees, Shovel for the rest, and their abilities only while harvesting. |
+| `lib/Travel.txt` | Out of combat: Quarterstaff dash, else Triskelion + Ouroboros (Star Stone near pickups). |
+| `lib/Combat.txt` | Mask, Skeleton Arm and Blade abilities; Bashing (else Dashing) Shield to close in; wand and shield of the countering element. |
+| `lib/Element.txt` | Which element beats the target, else the location. |
+| `lib/Debuff.txt` | Against bosses: the wand that applies whichever of weaken, burn and chill is missing. |
 | `UI/MindstoneButton.txt`, `Cosmetics/WitchBroom.txt`, `Hats/WitchHat.txt` | Copies of the official library scripts `main.txt` imports, taken unchanged from `stonestoryrpg.com/stonescript/`. They have to live here because once the game is pointed at this repo, *every* `import` resolves against it. They do not update themselves; re-download them to pick up upstream changes. |
 
 ## The loader

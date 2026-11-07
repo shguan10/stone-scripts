@@ -1,0 +1,23 @@
+// Travel: moving between fights. Dash
+// with the Quarterstaff when it is up;
+// otherwise walk with the Triskelion
+// (speed) and the Ouroboros (heal).
+// The Star Stone takes the Ouroboros's
+// hand to pull in pickups.
+
+var gear = import lib/Gear
+
+func Dash()
+  ?foe & foe.distance <= 17
+    return false
+  return gear.Cast("quarterstaff", "quarterstaff", "B")
+
+func Walk()
+  ?pickup & pickup.distance < 10
+    gear.L("star")
+  gear.L("ouroboros")
+  gear.R("triskelion")
+
+func Run()
+  Dash()
+  Walk()
