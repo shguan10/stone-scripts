@@ -19,9 +19,13 @@ var debug = true
   equipR sh *0*
   equipR @item.right@
 
+// A boss is safe only while asleep or
+// revealing itself (state 0): state 1 is
+// already the idle right before the
+// first attack.
 var safe
 safe = !foe | (foe.distance>20 & foe ! boss)
-^| (foe = boss & foe.state<=1 & hp = maxhp)
+^| (foe = boss & foe.state=0 & hp = maxhp)
 
 // Highest priority first: each hand goes
 // to the first module that asks for it.
