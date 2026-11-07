@@ -71,7 +71,11 @@ func Crossbow(el)
 
 func Run()
   Abilities()
-  ?foe = boss
+  // A boss missing a debuff gets the wand
+  // that applies it, crossbow or not.
+  ?foe = boss & string.Size(debuff.Wand()) > 0
+    Ranged()
+  :?foe = boss
     Crossbow(element.Best())
   :
     Ranged()
