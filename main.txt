@@ -41,6 +41,7 @@ gear.Apply()
 
 ?debug
   >`0,1,L @item.left@ / R @item.right@
+  >`0,5,cast: @gear.last@
 ?debug & foe
   >`0,2,@foe.id@ s@foe.state@ t@foe.time@
   ?foe.debuffs.count > 0
