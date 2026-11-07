@@ -1,0 +1,50 @@
+import UI/MindstoneButton
+import Cosmetics/WitchBroom
+import Hats/WitchHat
+?item.left.state=3
+  equipL st
+  equipL @item.left@
+?item.right.state=3
+  equipR sh *0*
+  equipR @item.right@
+
+func Cast(wep)
+  ?item.GetCooldown(wep) <=0
+  ^&item.CanActivate()
+    equip @wep@
+    activate R
+    >@wep@
+    return true
+  :?item.right.id=@wep@ & item.right.state=2
+    >@wep@,2
+    return true
+  return false
+
+var safe
+safe=(foe.distance>20 & foe ! boss)
+^| (foe = boss & foe.state<=1 & hp = maxhp)
+
+?safe
+  var cast
+  cast=Cast( " quarterstaff " )
+  equipL ou
+  ?!cast
+    equipR tri
+  ?pickup.distance<10
+    equipL star
+  :?harvest.distance<10
+    equipR shovel
+    ?harvest.distance<5
+      Cast( " shovel " )
+:
+  var cast
+  cast=Cast( " blade " )
+  ?! false
+    equipR fir
+    equipL vig wa
+    ?foe=boss & foe.state>1
+      equipR fir
+      equipL vig wa
+
+//?foe=boss & foe.hp<foe.maxhp
+  //activate potion
