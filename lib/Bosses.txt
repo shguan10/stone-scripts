@@ -96,9 +96,18 @@ func Mind()
   return false
 
 // Returns true if this frame dodges.
+// A boss has been seen in this location.
+// Stays set while a summoned minion is
+// the target, so Travel does not dash at
+// it into the boss.
+var fightOn = false
+
 func Dodge()
+  ?loc.begin | loc.loop
+    fightOn = false
   ?foe ! boss
     return false
+  fightOn = true
   Track()
   var fid = foe.id
   // Dysangelos (Rocky)

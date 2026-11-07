@@ -6,11 +6,13 @@
 // hand to pull in pickups.
 
 var gear = import lib/Gear
+var bosses = import lib/Bosses
 
-// Not at a boss: the dash ends in its
-// melee range, and fights stay ranged.
+// Not in a boss fight, minions included:
+// the dash ends in the boss's melee
+// range, and fights stay ranged.
 func Dash()
-  ?foe = boss
+  ?foe = boss | bosses.fightOn
     return false
   ?foe & foe.distance <= 17
     return false
