@@ -35,9 +35,12 @@ gear.Hold()
   combat.Run()
 gear.Apply()
 
+?debug
+  >`0,1,L @item.left@ / R @item.right@
 ?debug & foe
-  >`0,1,@foe.id@ s@foe.state@ t@foe.time@
-  >`0,2,@foe.debuffs.string@
+  >`0,2,@foe.id@ s@foe.state@ t@foe.time@
+  ?foe.debuffs.count > 0
+    >`0,3,@foe.debuffs.string@
 
 //?foe=boss & foe.hp<foe.maxhp
   //activate potion

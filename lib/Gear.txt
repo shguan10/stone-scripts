@@ -128,14 +128,18 @@ func Cast(abil, crit, hand)
 
 // Keep the last cast's item equipped for
 // a few frames after activation (the
-// Quarterstaff's dash needs it) and for
-// as long as it is still winding up.
+// Quarterstaff's dash needs it) and while
+// it winds up, for up to a second.
 func Hold()
   var since = totaltime - castAt
-  ?since > 90
-    return false
   ?since <= 3
     return Take(castHand, castCrit)
+  // State 2 is also every weapon's normal
+  // wind-up, so only trust it right after
+  // the cast, or a dash's Quarterstaff
+  // would keep coming back.
+  ?since > 30
+    return false
   var st = item.right.state
   ?castHand = "L"
     st = item.left.state
