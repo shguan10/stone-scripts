@@ -27,7 +27,7 @@ safe = !foe | (foe.distance>20 & foe ! boss)
 // to the first module that asks for it.
 gear.Reset()
 bosses.Dodge()
-gear.Continue()
+gear.Hold()
 ?safe
   harv.Run()
   travel.Run()
