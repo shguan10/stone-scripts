@@ -4,43 +4,44 @@
 // fight with the boss's best weapons.
 //
 // Per boss (community scripts):
-//   any armored boss: hammers to strip
+//   any armored boss: a hammer to strip
 //     the armor, then swords
 //   Dysangelos P1, Xyloalgia (stone):
 //     chill (ice dI) sword, else fire
 //   Dysangelos P2: counter the arm in use
 //   Dysangelos P3: an element he has not
 //     adapted to (adaptive_defense_*)
-//   Poena: stone + aether hammers, to
-//     stunlock her; no debuffs or vigor,
+//   Poena: a stone hammer, to stunlock
+//     her; no debuffs or vigor,
 //     which her mirror turns on us
 //   Nagaraja: ice sword
 //   Angry Shroom: poison sword
 //   Pallas: vigor sword; vigor wand
 //     while his adds are up
 //   Bronze Guardian, while his hammer is
-//     down (Combat): aether hammers on the
+//     down (Combat): aether hammer on the
 //     helmet, then an aether dU sword
 //   Hrimnir: fire sword, which also cracks
 //     his ice armor; fire wand during his
 //     blows, which cannot be dodged
 // Bolesh is fought at range (Combat).
 //
-// Two hands cannot hold the same item, so
+// Hammers take both hands. Otherwise the
+// two hands cannot hold the same item, so
 // the right hand gets a different element:
 // a weapon that applies a debuff the boss
-// is missing (Debuff), else a hammer of
-// another element on armor, else the
-// counter shield.
+// is missing (Debuff), else the counter
+// shield.
 
 var gear = import lib/Gear
 var element = import lib/Element
 var debuff = import lib/Debuff
 
-// The main weapon and its element; wantR
-// only when a boss needs a specific pair.
+// The main weapon and its element, and
+// a two-handed weapon (a hammer) that
+// takes precedence when owned.
 var wantL = ""
-var wantR = ""
+var wantB = ""
 var mainEl = ""
 
 func Crit(el, kind)
@@ -52,13 +53,14 @@ func Main(el, kind)
   mainEl = el
   wantL = Crit(el, kind)
 
-// Heavy Hammer is two-handed; the
-// one-handed ones are "-heavy". The
-// second is any other element's.
-func Hammers(el)
-  Main(el, "hammer -heavy")
-  ?el
-    wantR = "hammer -heavy -" + el
+// "-heavy": the Heavy Hammer is the
+// ability item. The sword is for when no
+// hammer is owned.
+func Hammer(el)
+  Main(el, "sword")
+  wantB = Crit(el, "hammer -heavy")
+  ?!gear.Has(wantB)
+    wantB = "hammer -heavy"
 
 func DysWeakness()
   var b = foe.buffs.string
@@ -77,16 +79,15 @@ func ChillOrFire()
     return "ice"
   return "fire"
 
-// Sets wantL, wantR and mainEl.
+// Sets wantL, wantB and mainEl.
 func Pick()
   wantL = ""
-  wantR = ""
+  wantB = ""
   mainEl = ""
   var fid = foe.id
   var el = element.Best()
   ?fid = poena
-    wantL = "stone hammer"
-    wantR = "aether hammer"
+    Hammer("stone")
     return
   ?fid = yeti
     ?foe.state = 133
@@ -96,7 +97,7 @@ func Pick()
     return
   ?fid = bronze_guardian
     ?foe.armor > 0
-      Hammers("aether")
+      Hammer("aether")
     :
       Main("aether", "sword du")
     return
@@ -108,18 +109,19 @@ func Pick()
   :?fid = dysangelos_bearer | fid = tree_boss
     el = ChillOrFire()
   ?foe.armor > 0
-    Hammers(el)
+    Hammer(el)
   :
     Main(el, "sword")
 
 func Wield()
+  ?wantB & gear.Has(wantB)
+    gear.Both(wantB)
+    return
   var l = wantL
   ?!gear.Has(l)
     l = ""
-  var r = wantR
-  ?r & !gear.Has(r)
-    r = ""
-  ?!r & foe.id ! poena
+  var r = ""
+  ?foe.id ! poena
     r = debuff.Weapon(mainEl)
   ?!r
     r = Crit(element.Best(), "shield -dashing -bashing")
