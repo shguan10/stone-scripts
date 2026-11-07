@@ -45,6 +45,8 @@ gear.Apply()
   >`0,2,@foe.id@ s@foe.state@ t@foe.time@
   ?foe.debuffs.count > 0
     >`0,3,@foe.debuffs.string@
+  ?foe = boss
+    >`0,4,dodge: @bosses.info@
 
 //?foe=boss & foe.hp<foe.maxhp
   //activate potion

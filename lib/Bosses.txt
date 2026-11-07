@@ -5,40 +5,101 @@
 // Frame numbers are community values
 // (livercat/scribble, alexbarker234,
 // Fuzznimp, the Miraheze wiki) for the
-// unchilled boss; every chill stack adds
-// ~7 frames to each state. Turn on debug
-// in main to see state and time, and
-// recalibrate here if a dodge is early
-// or late. Attacks not listed (Hrimnir's
+// unchilled boss, and are used only for
+// the first attack of each kind. After
+// that the dodge comes from how long that
+// state actually lasted last time (Track),
+// corrected for the change in chill
+// stacks (~7 frames each). info says what
+// the last dodge did; main prints it in
+// debug. Attacks not listed (Hrimnir's
 // blows, Dysangelos P2's arms) cannot be
 // dodged; the counter shield takes them.
 
 var gear = import lib/Gear
 
-func Chill()
-  return 7 * foe.debuffs.GetCount("debuff_chill")
+// Dodge this many frames before the
+// measured end of the state.
+var lead = 4
 
-// Inside a 6-frame window from frame t
-// of the given state.
+var info = ""
+var win = ""
+
+// Measured state lengths, keyed
+// "<foe id>:<state>", with the chill
+// stacks during each.
+var lenKeys = []
+var lens = []
+var lenChill = []
+var curKey = ""
+var curMax = 0
+var curChill = 0
+
+func Stacks()
+  return foe.debuffs.GetCount("debuff_chill")
+
+func Track()
+  ?loc.begin | loc.loop
+    lenKeys.Clear()
+    lens.Clear()
+    lenChill.Clear()
+  var key = foe.id + ":" + foe.state
+  ?string.Equals(key, curKey)
+    curMax = foe.time
+    ?Stacks() > curChill
+      curChill = Stacks()
+    return
+  // The state just ended: keep its length.
+  ?curMax > 0
+    var i = lenKeys.IndexOf(curKey)
+    ?i < 0
+      lenKeys.Add(curKey)
+      lens.Add(curMax + 1)
+      lenChill.Add(curChill)
+    :
+      lens.Emplace(i, curMax + 1)
+      lenChill.Emplace(i, curChill)
+  curKey = key
+  curMax = 0
+  curChill = Stacks()
+
+// Inside a 6-frame window starting at
+// frame t of the given state, or lead
+// frames before its measured end.
 func At(st, t)
   ?foe.state ! st
     return false
-  var from = t + Chill()
+  var from = t + 7 * Stacks()
+  var i = lenKeys.IndexOf(foe.id + ":" + st)
+  ?i >= 0
+    from = lens[i] - lead + 7 * (Stacks() - lenChill[i])
+  ?foe.time = 0
+    win = "s" + st + " dodge@" + from
+    info = win
   return foe.time >= from & foe.time <= from + 6
 
 func Mind()
   ?item.GetCooldown("mind") > 0
+    // Already used on this attack?
+    ?info ! "DODGED"
+      info = win + " mind on cooldown"
     return false
   // A backflip into the screen edge
   // goes nowhere.
   ?screen.FromWorldX(pos.x) <= 5
+    info = win + " at screen edge"
     return false
-  return gear.L("mind")
+  ?gear.L("mind")
+    info = win + " DODGED t" + foe.time
+    return true
+  info = win + " hand taken"
+  return false
 
 // Returns true if this frame dodges.
 func Dodge()
   ?foe ! boss
     return false
+  Track()
   var fid = foe.id
   // Dysangelos (Rocky)
   ?fid = dysangelos_bearer
