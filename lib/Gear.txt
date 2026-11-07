@@ -130,7 +130,6 @@ func Cast(abil, crit, hand)
 // a few frames after activation (the
 // Quarterstaff's dash needs it) and for
 // as long as it is still winding up.
-// (Not "Continue": that is reserved.)
 func Hold()
   var since = totaltime - castAt
   ?since > 90
