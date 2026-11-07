@@ -84,8 +84,15 @@ func Dodge()
     ?At(32, 17)
       return Mind()
     return false
+  // Phase 1's blade slam winds up 125
+  // frames at 3 stars, 90 at 4, 70 at 5+.
   ?fid = skeleton_boss
-    ?At(32, 68)
+    var slam = 68
+    ?loc.stars <= 3
+      slam = 123
+    :?loc.stars = 4
+      slam = 88
+    ?At(32, slam)
       return Mind()
     return false
   // Bronze Guardian (Mine): the hammer,
