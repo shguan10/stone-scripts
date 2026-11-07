@@ -1,0 +1,140 @@
+// Melee: the boss-fight strategy. Close
+// in with the Bashing Shield (Dashing if
+// it is on cooldown), then fight with
+// the boss's best melee weapons.
+//
+// Per boss (community scripts):
+//   any armored boss: hammers to strip
+//     the armor, then swords
+//   Dysangelos P1, Xyloalgia (stone):
+//     chill (ice dI) swords, else fire
+//   Dysangelos P2: counter the arm in use
+//   Dysangelos P3: an element he has not
+//     adapted to (adaptive_defense_*)
+//   Poena: stone + aether hammers, to
+//     stunlock her; no debuffs or vigor,
+//     which her mirror turns on us
+//   Bolesh, Nagaraja: ice swords
+//   Angry Shroom: poison swords
+//   Pallas: vigor swords; vigor wands
+//     while his adds are up
+//   Bronze Guardian: aether hammers on the
+//     helmet, then aether dU swords
+//   Hrimnir: fire swords, which also crack
+//     his ice armor; fire wand during his
+//     blows, which cannot be dodged
+// A debuff weapon (Debuff) takes the left
+// hand while the boss is missing one.
+
+var gear = import lib/Gear
+var element = import lib/Element
+var debuff = import lib/Debuff
+
+var wantL = ""
+var wantR = ""
+
+func Crit(el, kind)
+  ?el
+    return el + " " + kind
+  return kind
+
+func Pair(el, kind)
+  wantL = Crit(el, kind)
+  wantR = wantL
+
+// Heavy Hammer is two-handed; these are
+// the one-handed ones.
+func Hammers(el)
+  Pair(el, "hammer -heavy")
+
+func DysWeakness()
+  var b = foe.buffs.string
+  ?b ! adaptive_defense_fire
+    return "fire"
+  ?b ! adaptive_defense_ice
+    return "ice"
+  ?b ! adaptive_defense_aether
+    return "aether"
+  ?b ! adaptive_defense_vigor
+    return "vigor"
+  return "poison"
+
+func ChillOrFire()
+  ?debuff.Can("debuff_chill")
+    return "ice"
+  return "fire"
+
+// Sets wantL and wantR.
+func Pick()
+  var fid = foe.id
+  var el = element.Best()
+  ?fid = poena
+    wantL = "stone hammer"
+    wantR = "aether hammer"
+    return
+  ?fid = yeti
+    ?foe.state = 133
+      Pair("fire", "wand")
+    :
+      Pair("fire", "sword")
+    return
+  ?fid = bronze_guardian
+    ?foe.armor > 0
+      Hammers("aether")
+    :
+      Pair("aether", "sword du")
+    return
+  ?fid = skeleton_boss_stage_2 & foe.count > 1
+    Pair("vigor", "wand")
+    return
+  ?fid = dysangelos_perfected
+    el = DysWeakness()
+  :?fid = dysangelos_bearer | fid = tree_boss
+    el = ChillOrFire()
+  ?foe.armor > 0
+    Hammers(el)
+  :
+    Pair(el, "sword")
+
+// Both hands want the same kind: that
+// needs two copies, else the right hand
+// takes the counter shield.
+func Wield()
+  var l = wantL
+  ?foe.id ! poena
+    var d = debuff.Weapon()
+    ?d
+      l = d
+  ?!gear.Has(l)
+    l = ""
+  var r = wantR
+  var same = string.Equals(l, r)
+  ?!gear.Has(r) | same & item.GetCount(r) < 2
+    r = ""
+  ?!r
+    var el = element.Best()
+    r = Crit(el, "shield -dashing -bashing")
+    ?!gear.Has(r)
+      r = "shield -dashing -bashing"
+  ?l
+    gear.L(l)
+  gear.R(r)
+
+// The shields dash to the foe on their
+// own when held 11-16 away. Bashing also
+// stuns, so it goes first.
+func DashIn()
+  ?foe.distance < 11 | foe.distance > 16
+    return
+  ?item.GetCooldown("bash") <= 0
+    ?gear.Has("bashing shield")
+      gear.R("bashing shield")
+      return
+  ?item.GetCooldown("dash") <= 0
+    ?gear.Has("dashing shield")
+      gear.R("dashing shield")
+
+func Run()
+  DashIn()
+  Pick()
+  Wield()

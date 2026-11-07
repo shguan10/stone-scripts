@@ -1,13 +1,15 @@
 // Combat: everything once a foe is close.
-// In priority order: offensive abilities,
-// the dash in, then a wand and a shield
-// of the element that counters the foe.
-// Against a boss the wand is first used
-// to keep it weakened, burned and chilled.
+// Offensive abilities first. Then bosses
+// are fought in melee (see Melee) and
+// everything else at range, with a wand
+// and a shield of the element that
+// counters the foe. The dashing shields
+// belong to melee only.
 
 var gear = import lib/Gear
 var element = import lib/Element
 var debuff = import lib/Debuff
+var melee = import lib/Melee
 
 var arms = ["skeleton arm", "skeleton_arm"]
 var fallbackWands = ["vigor wand", "wand"]
@@ -28,27 +30,11 @@ func Abilities()
       gear.Cast("skeleton_arm", arm, "B")
   gear.Cast("blade", "blade", "B")
 
-// The shields dash to the foe on their
-// own when held 11-16 away. Bashing also
-// stuns, so it goes first.
-func DashIn()
-  ?foe.distance < 11 | foe.distance > 16
-    return
-  ?item.GetCooldown("bash") <= 0
-    ?gear.Has("bashing shield")
-      gear.R("bashing shield")
-      return
-  ?item.GetCooldown("dash") <= 0
-    ?gear.Has("dashing shield")
-      gear.R("dashing shield")
-
-func Weapons()
+func Ranged()
   var el = element.Best()
   var wand = ""
   var c = ""
-  ?foe = boss
-    wand = debuff.Wand()
-  ?!wand & el
+  ?el
     c = el + " wand"
     ?gear.Has(c)
       wand = c
@@ -56,8 +42,8 @@ func Weapons()
     wand = gear.First(fallbackWands)
   ?wand
     gear.L(wand)
-  // Plain shield: the dashing ones are
-  // DashIn's, and would dash on their own.
+  // Plain shield: the dashing ones would
+  // dash in on their own.
   var shield = "shield -dashing -bashing"
   ?el
     c = el + " shield -dashing -bashing"
@@ -67,5 +53,7 @@ func Weapons()
 
 func Run()
   Abilities()
-  DashIn()
-  Weapons()
+  ?foe = boss
+    melee.Run()
+  :
+    Ranged()
