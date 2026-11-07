@@ -29,15 +29,22 @@ func Can(id)
   var tag = "immune_to_" + id
   return foe ! tag
 
-// Missing outright. Refreshing early
-// would swap weapons mid-attack, which
-// costs more than the gap.
+// Below its target stacks: venom (weaken)
+// is stacked to 5, chill kept at 1, burn
+// only when missing. Topping up chill
+// past 1 took the debuff hand from venom.
+var venomStacks = 5
+var chillStacks = 1
+
 func Needs(id)
   ?!Can(id)
     return false
+  var n = foe.debuffs.GetCount(id)
+  ?id = "debuff_damage"
+    return n < venomStacks
   ?id = "debuff_chill"
-    return foe.debuffs.GetCount(id) < 6
-  return foe.debuffs.GetCount(id) = 0
+    return n < chillStacks
+  return n = 0
 
 // Poison first, then burn, then chill.
 // "" when nothing is missing or no
