@@ -17,10 +17,6 @@ var travel = import lib/Travel
 var arms = ["skeleton arm", "skeleton_arm"]
 var fallbackWands = ["vigor wand", "wand"]
 
-// The Blade of the Fallen God's range
-// (Miraheze wiki).
-var bladeRange = 11
-
 func Abilities()
   ?foe.distance > 20
     return
@@ -43,8 +39,7 @@ func Abilities()
   // Never against Palas (either stage):
   // the ability summons Palas, so the game
   // refuses it at any range.
-  ?foe.distance <= bladeRange &
-  ^foe ! skeleton_boss
+  ?foe ! skeleton_boss
     gear.Cast("blade", "blade", "B")
 
 // The counter wand does the damage. A boss
