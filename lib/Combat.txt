@@ -12,6 +12,7 @@ var gear = import lib/Gear
 var element = import lib/Element
 var debuff = import lib/Debuff
 var melee = import lib/Melee
+var travel = import lib/Travel
 
 var arms = ["skeleton arm", "skeleton_arm"]
 var fallbackWands = ["vigor wand", "wand"]
@@ -84,8 +85,21 @@ func Crossbow(el)
   :
     Ranged()
 
+// Wand range, learned: the furthest a
+// boss has been when the wand started an
+// attack (state 2). Starts low so the
+// first approach does not stall short.
+var wandRange = 12
+
 func Run()
+  ?item.left = wand & item.left.state = 2 &
+  ^foe.distance > wandRange
+    wandRange = foe.distance
   Abilities()
+  // A boss out of wand range: travel to it.
+  ?foe = boss & foe.distance > wandRange
+    travel.Run()
+    return
   Ranged()
   // Crossbows, for when they come back:
   //?foe = boss
