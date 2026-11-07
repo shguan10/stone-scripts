@@ -32,20 +32,32 @@ func Abilities()
       gear.Cast("skeleton_arm", arm, "B")
   gear.Cast("blade", "blade", "B")
 
+// The counter wand does the damage. A boss
+// missing a debuff gets the wand that
+// applies it in place of the shield, of a
+// different element (one item cannot be
+// in both hands).
 func Ranged()
   var el = element.Best()
   var wand = ""
+  var wandEl = ""
   var c = ""
-  ?foe = boss
-    wand = debuff.Wand()
-  ?!wand & el
+  ?el
     c = el + " wand"
     ?gear.Has(c)
       wand = c
+      wandEl = el
   ?!wand
     wand = gear.First(fallbackWands)
+    ?string.IndexOf(wand, "vigor") = 0
+      wandEl = "vigor"
   ?wand
     gear.L(wand)
+  ?foe = boss
+    c = debuff.Wand(wandEl)
+    ?string.Size(c) > 0
+      gear.R(c)
+      return
   // Plain shield: the dashing ones would
   // dash in on their own.
   var shield = "shield -dashing -bashing"
@@ -55,8 +67,9 @@ func Ranged()
       shield = c
   gear.R(shield)
 
-// Two-handed, so both hands or nothing.
-// Without one, a wand and shield.
+// Two-handed, so both hands or nothing,
+// and no debuffs: there is no shield to
+// swap out. Without one, Ranged.
 func Crossbow(el)
   var c = "crossbow"
   ?el
@@ -71,11 +84,7 @@ func Crossbow(el)
 
 func Run()
   Abilities()
-  // A boss missing a debuff gets the wand
-  // that applies it, crossbow or not.
-  ?foe = boss & string.Size(debuff.Wand()) > 0
-    Ranged()
-  :?foe = boss
+  ?foe = boss
     Crossbow(element.Best())
   :
     Ranged()
