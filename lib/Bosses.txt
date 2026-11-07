@@ -43,8 +43,8 @@ func Track()
     lenKeys.Clear()
     lens.Clear()
     lenChill.Clear()
-  var key = foe.id + ":" + foe.state
-  ?string.Equals(key, curKey)
+  var sk = foe.id + ":" + foe.state
+  ?string.Equals(sk, curKey)
     curMax = foe.time
     ?Stacks() > curChill
       curChill = Stacks()
@@ -59,7 +59,7 @@ func Track()
     :
       lens.Emplace(i, curMax + 1)
       lenChill.Emplace(i, curChill)
-  curKey = key
+  curKey = sk
   curMax = 0
   curChill = Stacks()
 
