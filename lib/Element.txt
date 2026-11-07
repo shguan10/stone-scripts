@@ -1,0 +1,54 @@
+// Element: which element beats what we
+// are fighting. "" means stone, which
+// nothing counters.
+//
+// Cycle: ice > poison > vigor > aether
+//        > fire > ice
+
+func FoeElement()
+  ?!foe
+    return ""
+  ?foe = poison
+    return "poison"
+  ?foe = vigor
+    return "vigor"
+  ?foe = aether
+    return "aether"
+  ?foe = fire
+    return "fire"
+  ?foe = ice
+    return "ice"
+  return ""
+
+func Counter(el)
+  ?el = "poison"
+    return "ice"
+  ?el = "vigor"
+    return "poison"
+  ?el = "aether"
+    return "vigor"
+  ?el = "fire"
+    return "aether"
+  ?el = "ice"
+    return "fire"
+  return ""
+
+// For before a foe is targeted.
+func LocCounter()
+  ?loc = caves | loc = temple
+    return "ice"
+  ?loc = mushroom | loc = fungus
+    return "poison"
+  ?loc = halls | loc = undead
+    return "vigor"
+  ?loc = mine | loc = bronze
+    return "aether"
+  ?loc = icy
+    return "fire"
+  return ""
+
+func Best()
+  var c = Counter(FoeElement())
+  ?c
+    return c
+  return LocCounter()

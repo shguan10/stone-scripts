@@ -1,0 +1,71 @@
+// Combat: everything once a foe is close.
+// In priority order: offensive abilities,
+// the dash in, then a wand and a shield
+// of the element that counters the foe.
+// Against a boss the wand is first used
+// to keep it weakened, burned and chilled.
+
+var gear = import lib/Gear
+var element = import lib/Element
+var debuff = import lib/Debuff
+
+var arms = ["skeleton arm", "skeleton_arm"]
+var fallbackWands = ["vigor wand", "wand"]
+
+func Abilities()
+  ?foe.distance > 20
+    return
+  // Plague Wand: weaken, if not on yet.
+  ?foe = boss & debuff.Needs("debuff_damage")
+    gear.Cast("wand_poison", "poison wand", "L")
+  // Feeble. Nagaraja cannot be masked.
+  ?foe ! nagaraja & foe.distance <= 10
+    gear.Cast("mask", "mask", "R")
+  ?foe.distance > 3 & foe.distance < 9 &
+  ^foe ! immune_to_physical
+    var arm = gear.First(arms)
+    ?arm
+      gear.Cast("skeleton_arm", arm, "B")
+  gear.Cast("blade", "blade", "B")
+
+// The shields dash to the foe on their
+// own when held 11-16 away. Bashing also
+// stuns, so it goes first.
+func DashIn()
+  ?foe.distance < 11 | foe.distance > 16
+    return
+  ?item.GetCooldown("bash") <= 0
+    ?gear.Has("bashing shield")
+      gear.R("bashing shield")
+      return
+  ?item.GetCooldown("dash") <= 0
+    ?gear.Has("dashing shield")
+      gear.R("dashing shield")
+
+func Weapons()
+  var el = element.Best()
+  var wand = ""
+  var c = ""
+  ?foe = boss
+    wand = debuff.Wand()
+  ?!wand & el
+    c = el + " wand"
+    ?gear.Has(c)
+      wand = c
+  ?!wand
+    wand = gear.First(fallbackWands)
+  ?wand
+    gear.L(wand)
+  // Plain shield: the dashing ones are
+  // DashIn's, and would dash on their own.
+  var shield = "shield -dashing -bashing"
+  ?el
+    c = el + " shield -dashing -bashing"
+    ?gear.Has(c)
+      shield = c
+  gear.R(shield)
+
+func Run()
+  Abilities()
+  DashIn()
+  Weapons()
