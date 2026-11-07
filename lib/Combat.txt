@@ -33,7 +33,11 @@ func Abilities()
     var arm = gear.First(arms)
     ?arm
       gear.Cast("skeleton_arm", arm, "B")
-  gear.Cast("blade", "blade", "B")
+  // Blade of the Fallen God: off. Its
+  // ability was never ready in recorded
+  // fights, so each try only walked with
+  // the blade in place of wand and shield.
+  //gear.Cast("blade", "blade", "B")
 
 // The counter wand does the damage. A boss
 // missing a debuff gets the wand that
