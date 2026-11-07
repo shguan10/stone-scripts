@@ -26,6 +26,11 @@ var debug = true
 var safe
 safe = !foe | (foe.distance>20 & foe ! boss)
 ^| (foe = boss & foe.state=0 & hp = maxhp)
+// Never once a boss fight is on: a far
+// summoned minion would have the stones
+// walk the player into the boss.
+?bosses.fightOn & foe
+  safe = false
 
 // Highest priority first: each hand goes
 // to the first module that asks for it.

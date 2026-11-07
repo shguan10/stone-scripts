@@ -7,12 +7,12 @@ from this repo with `import`.
 
 | File | |
 |---|---|
-| `main.txt` | The Mind Stone script itself: runs the modules below in priority order. Set `debug` to print the target's id, state and time. |
+| `main.txt` | The Mind Stone script itself: runs the modules below in priority order. Once a boss has been seen in the location, a far foe no longer counts as safe, so the player is not walked into the boss with the stones. Set `debug` to print the target's id, state and time. |
 | `lib/Gear.txt` | One frame's equip and ability requests. The first module to ask for a hand gets it; `Cast` keeps an ability's item held while it winds up. |
 | `lib/Bosses.txt` | Mind Stone backflips out of each boss's avoidable attacks. Frame timings are community values; recalibrate here. |
 | `lib/Harvest.txt` | Hatchet for trees, Shovel for the rest, and their abilities only while harvesting. |
 | `lib/Travel.txt` | Out of combat: Quarterstaff dash (never once a boss has been seen in the location, so not at its minions either), else Triskelion + Ouroboros (Star Stone near pickups). |
-| `lib/Combat.txt` | Mask (bosses only) and Blade abilities whenever off cooldown (the Skeleton Arm's is commented out); one the game will not fire goes back after 5 frames and is retried every 10 s. Never the Blade against Palas: its ability summons him, so the game refuses it. A wand and shield of the countering element; against a boss missing a debuff, the wand that applies it replaces the shield. A boss out of wand range is walked to only until it is first hit, so a backflip is not undone. Crossbows and melee are commented out in `Run`. |
+| `lib/Combat.txt` | Mask (bosses only) and Blade abilities whenever off cooldown (the Skeleton Arm's is commented out); one the game will not fire goes back after 5 frames and is retried every 10 s. Never the Blade once Palas has been seen in the location (his minions included): its ability summons him, so the game refuses it. A wand and shield of the countering element; against a boss missing a debuff, the wand that applies it replaces the shield. A boss out of wand range is walked to only until it is first hit, so a backflip is not undone. Crossbows and melee are commented out in `Run`. |
 | `lib/Melee.txt` | Boss fights: Bashing (else Dashing) Shield to close in, then each boss's best melee weapons (the list is at the top of the file). Two hands never hold the same item, so the second hand gets a different element. |
 | `lib/Element.txt` | Which element beats the target, else the location. |
 | `lib/Debuff.txt` | Against bosses: the weapon (sword, else wand) that applies whichever of venom (weaken, 1 stack), burn and chill (stacked to 5) is below target, in that order. |

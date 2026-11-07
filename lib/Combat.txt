@@ -13,6 +13,7 @@ var element = import lib/Element
 var debuff = import lib/Debuff
 var melee = import lib/Melee
 var travel = import lib/Travel
+var bosses = import lib/Bosses
 
 var arms = ["skeleton arm", "skeleton_arm"]
 var fallbackWands = ["vigor wand", "wand"]
@@ -37,10 +38,10 @@ func Abilities()
   //  var arm = gear.First(arms)
   //  ?arm
   //    gear.Cast("skeleton_arm", arm, "B")
-  // Never against Palas (either stage):
-  // the ability summons Palas, so the game
-  // refuses it at any range.
-  ?foe ! skeleton_boss
+  // Never once Palas is seen, his minions
+  // included: the ability summons Palas,
+  // so the game refuses it in his fight.
+  ?!bosses.palasSeen
     gear.Cast("blade", "blade", "B")
 
 // The counter wand does the damage. A boss

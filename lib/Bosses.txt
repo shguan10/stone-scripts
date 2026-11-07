@@ -101,13 +101,20 @@ func Mind()
 // the target, so Travel does not dash at
 // it into the boss.
 var fightOn = false
+// Palas (either stage) has been seen: the
+// Blade summons him, so it never fires
+// in his fight, minions included.
+var palasSeen = false
 
 func Dodge()
   ?loc.begin | loc.loop
     fightOn = false
+    palasSeen = false
   ?foe ! boss
     return false
   fightOn = true
+  ?foe = skeleton_boss
+    palasSeen = true
   Track()
   var fid = foe.id
   // Dysangelos (Rocky)
