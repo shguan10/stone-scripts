@@ -25,3 +25,12 @@ func Walk()
 func Run()
   Dash()
   Walk()
+
+// To a boss on purpose (Palas, to fire
+// the Blade): dash from afar, else walk
+// fast.
+func Rush()
+  ?foe.distance > 17
+    ?gear.Cast("quarterstaff", "quarterstaff", "B")
+      return
+  Walk()
