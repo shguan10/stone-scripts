@@ -30,11 +30,12 @@ func Can(id)
   return foe ! tag
 
 // Below its target stacks: venom (weaken)
-// is stacked to 5, chill kept at 1, burn
-// only when missing. Topping up chill
-// past 1 took the debuff hand from venom.
-var venomStacks = 5
-var chillStacks = 1
+// at 1, chill stacked to 5, burn only
+// when missing. Venom did not stack past
+// 1 in game, though the wiki says weaken
+// stacks.
+var venomStacks = 1
+var chillStacks = 5
 
 func Needs(id)
   ?!Can(id)

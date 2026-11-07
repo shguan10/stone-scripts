@@ -15,7 +15,7 @@ from this repo with `import`.
 | `lib/Combat.txt` | Mask (bosses only) and Blade abilities whenever off cooldown (the Skeleton Arm's is commented out); one the game will not fire goes back after 5 frames and is retried every 10 s. Never the Blade against Palas: its ability summons him, so the game refuses it. A wand and shield of the countering element; against a boss missing a debuff, the wand that applies it replaces the shield. A boss out of wand range is walked to only until it is first hit, so a backflip is not undone. Crossbows and melee are commented out in `Run`. |
 | `lib/Melee.txt` | Boss fights: Bashing (else Dashing) Shield to close in, then each boss's best melee weapons (the list is at the top of the file). Two hands never hold the same item, so the second hand gets a different element. |
 | `lib/Element.txt` | Which element beats the target, else the location. |
-| `lib/Debuff.txt` | Against bosses: the weapon (sword, else wand) that applies whichever of venom (weaken, stacked to 5), burn and chill (kept at 1) is below target, in that order. |
+| `lib/Debuff.txt` | Against bosses: the weapon (sword, else wand) that applies whichever of venom (weaken, 1 stack), burn and chill (stacked to 5) is below target, in that order. |
 | `UI/MindstoneButton.txt`, `Cosmetics/WitchBroom.txt`, `Hats/WitchHat.txt` | Copies of the official library scripts `main.txt` imports, taken unchanged from `stonestoryrpg.com/stonescript/`. They have to live here because once the game is pointed at this repo, *every* `import` resolves against it. They do not update themselves; re-download them to pick up upstream changes. |
 
 ## The loader
