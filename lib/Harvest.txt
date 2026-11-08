@@ -3,19 +3,26 @@
 // while harvesting. Trees take the
 // Hatchet (right hand); everything else
 // (Boulders) takes the two-handed Shovel.
+// Only within reach of the tool's
+// ability: until then safe walking keeps
+// the Ouroboros and the Triskelion
+// (Shane); the Shovel was carried from 10
+// away, two-handed (recorded).
 // Returns true while harvesting.
 
 var gear = import lib/Gear
 
 func Run()
-  ?!harvest | harvest.distance >= 10
+  ?!harvest
     return false
   ?harvest = Tree
-    ?harvest.distance <= 4
-      gear.Cast("hatchet", "hatchet", "R")
+    ?harvest.distance > 4
+      return false
+    gear.Cast("hatchet", "hatchet", "R")
     gear.R("hatchet")
   :
-    ?harvest.distance < 5
-      gear.Cast("shovel", "shovel", "B")
+    ?harvest.distance >= 5
+      return false
+    gear.Cast("shovel", "shovel", "B")
     gear.Both("shovel")
   return true
