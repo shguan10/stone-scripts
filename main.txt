@@ -11,6 +11,11 @@ var combat = import lib/Combat
 // Prints the target's id, state and time
 // top-left, for calibrating lib/Bosses.
 var debug = true
+
+// When this location began, for the
+// start-of-location tower.
+var locStart = -999
+var startFrames = 2
 var dysEls = ["fire", "ice", "aether", "vigor", "poison"]
 
 // Dysangelos's talk, auto-skipped. He is
@@ -50,6 +55,13 @@ safe = !foe | (foe.distance>20 & foe ! boss)
 // Highest priority first: each hand goes
 // to the first module that asks for it.
 gear.Reset()
+// The Towering Shield in hand on a
+// location's first frames starts it at
+// full armor (Shane).
+?loc.begin | loc.loop
+  locStart = totaltime
+?totaltime - locStart <= startFrames
+  gear.R(combat.tower)
 bosses.Dodge()
 gear.Hold()
 ?safe
