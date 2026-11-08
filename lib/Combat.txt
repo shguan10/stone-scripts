@@ -165,17 +165,15 @@ func Ranged()
       return
   // A counter-element shield first (Shane:
   // poison beats the tower in the Mushroom
-  // Forest), a tower of that element ahead
-  // of a plain one; else the Towering
-  // Shield. The plain Stone shield never
-  // goes on in a fight while a tower is
-  // owned. The dashing ones would dash in
-  // on their own.
+  // Forest; the tower has no element
+  // versions); else the Towering Shield.
+  // The plain Stone shield never goes on
+  // in a fight while a tower is owned. The
+  // dashing ones would dash in on their
+  // own.
   var shield = tower
   ?el
-    c = el + " " + tower
-    ?!gear.Has(c)
-      c = el + " shield -dashing -bashing"
+    c = el + " shield -dashing -bashing"
     ?gear.Has(c)
       shield = c
   ?!gear.Has(shield)
