@@ -132,15 +132,16 @@ func AtFlat(st, t)
     info = win
   return foe.time >= from & foe.time <= from + 6
 
-// A fixed 6-frame window from frame t,
-// nothing learned.
-func AtFixed(st, t)
-  ?foe.state ! st
-    return false
-  ?foe.time = 0
-    win = "s" + st + " dodge@" + t + " fixed"
-    info = win
-  return foe.time >= t & foe.time <= t + 6
+// Palas P1's slam wind-up (state 32) at
+// light blue, by the chill on him now
+// (recorded, see Dodge).
+func PalasSlamLen()
+  var c = Stacks()
+  ?c >= 5
+    return 104
+  ?c = 4
+    return 89
+  return 85
 
 func Mind()
   ?item.GetCooldown("mind") > 0
@@ -280,18 +281,28 @@ func Dodge()
   // (recorded ~70 unchilled at 5+, the hit
   // at 33 t2): 66 is that less the lead.
   // Light blue (6+): with no dodge it
-  // landed at ~85; after a t66 or t76
-  // backflip it wound up to ~104 at chill
-  // 5 and landed just as the walk back
-  // reached d21-22 (four recordings, hit
-  // 7-11 each). Chill or waiting for the
-  // player, unresolved; either way the hit
-  // lands 2-4 frames into state 33, so the
-  // dodge is on 33's first frames.
+  // landed at ~85. Chill at the end of
+  // the wind-up sets its length: 84-85 at
+  // 0-2 stacks, 89 at 4, 103-104 at 5
+  // (eight recorded slams; one stood in
+  // reach at chill 5 and still ran to
+  // 103). The hit lands on 33's first
+  // frame, so a dodge there is too late
+  // (recorded), and one 18+ frames early
+  // left time to walk back into reach
+  // (~d22; wands walk d31 -> d23 in ~24
+  // frames). So 8 before the length for
+  // the chill now.
   ?fid = skeleton_boss
     ?loc.stars >= 6
-      ?AtFixed(33, 0) & foe.time <= 1
-        return Mind()
+      // Open-ended: chill falling mid
+      // wind-up moves the frame earlier.
+      ?foe.state = 32
+        var at = PalasSlamLen() - 8
+        win = "s32 dodge@" + at + " chill" + Stacks()
+        ?foe.time >= at
+          return Mind()
+        info = win
       return false
     var slam = 66
     ?loc.stars <= 3
