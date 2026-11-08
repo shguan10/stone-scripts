@@ -1,13 +1,13 @@
 // Travel: moving between fights. Dash
 // with the Quarterstaff when it is up;
-// otherwise walk with the Star Stone
-// (pickups) and the Triskelion (speed),
-// always (Shane). Approach, for walking
-// up to a boss, holds a shield instead:
-// the Dashing, the Bashing while Dashing
-// is on cooldown, else the Towering.
-// The Star Stone takes the Ouroboros's
-// hand to pull in pickups.
+// otherwise walk with the Ouroboros
+// (heal) and the Triskelion (speed); the
+// Star Stone takes the Triskelion's hand
+// to pull in pickups (Shane). Approach,
+// for walking up to a boss, holds a
+// shield instead: the Dashing, the
+// Bashing while Dashing is on cooldown,
+// else the Towering.
 
 var gear = import lib/Gear
 var bosses = import lib/Bosses
@@ -23,8 +23,11 @@ func Dash()
   return gear.Cast("quarterstaff", "quarterstaff", "B")
 
 func Walk()
-  gear.L("star")
-  gear.R("triskelion")
+  gear.L("ouroboros")
+  ?pickup & pickup.distance < 10
+    gear.R("star")
+  :
+    gear.R("triskelion")
 
 func Approach()
   gear.L("ouroboros")
