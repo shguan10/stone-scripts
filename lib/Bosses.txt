@@ -63,11 +63,11 @@ func DysIdle()
     return foe.state = 100 | foe.state = 101
   return foe = dysangelos_elementalist & foe.state = 107
 
+// Cleared in Dodge at each location's
+// start: here (boss frames only) it never
+// ran, so a slow slam from the last run
+// set the next run's first dodge late.
 func Track()
-  ?loc.begin | loc.loop
-    lenKeys.Clear()
-    lens.Clear()
-    lenChill.Clear()
   var sk = foe.id + ":" + foe.state
   ?string.Equals(sk, curKey)
     curMax = foe.time
@@ -113,9 +113,12 @@ func At(st, t)
 // with chill decaying 4 -> 1 (recorded),
 // so 7 per stack put dodges up to 30
 // frames off. The learned length as is,
-// with a longer lead (t60 and t66 both
-// avoided the hit landing at ~72).
-var flatLead = 8
+// with a longer lead. Early is safe: t66
+// avoided a hit at ~86 (recorded). At 8,
+// a slam 7 frames shorter than the last
+// (85 after 92, light-blue 2) ended
+// before its window opened and hit for 9.
+var flatLead = 16
 
 func AtFlat(st, t)
   ?foe.state ! st
@@ -200,6 +203,11 @@ func Dodge()
     palasSeen = false
     lastBoss = ""
     dysActive = ""
+    lenKeys.Clear()
+    lens.Clear()
+    lenChill.Clear()
+    curKey = ""
+    curMax = 0
   ?foe ! boss
     return false
   fightOn = true

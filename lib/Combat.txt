@@ -237,18 +237,17 @@ func Crossbow(el)
   :
     Ranged()
 
-// Wand range, learned: the furthest a
-// boss has been when the wand started an
-// attack (state 2). Starts at 20, the
-// wand's range in Fuzznimp's table; at
-// 12 the stones never came out between
-// 12 and 20.
+// Wand range: 20, from Fuzznimp's table
+// (Palas P1 stands at d20 throughout).
+// It used to be learned, as the furthest
+// the target was when the wand went to
+// state 2, but that is any wind-up, so it
+// only ever rose and was never reset: it
+// passed 28 and the stones stopped coming
+// out for the walk to Palas (recorded).
 var wandRange = 20
 
 func Run()
-  ?item.left = wand & item.left.state = 2 &
-  ^foe.distance > wandRange
-    wandRange = foe.distance
   var dys3 = foe = dysangelos_perfected & !bosses.DysIdle()
   // The Heavy Hammer on armor: Dysangelos
   // P3, and the Mushroom bosses (Shane;
