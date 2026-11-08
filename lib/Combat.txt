@@ -65,14 +65,21 @@ func Abilities()
 var armorCap = 99
 var capGap = 1
 var capDrop = 2
+// Dysangelos P2's attacks knock armor
+// past capDrop so often that the wands
+// rarely came out (Shane).
+var dysP2Drop = 8
 var armorUp = false
 
 func ArmorFull()
   ?item.right = shield
     armorCap = maxarmor
+  var drop = capDrop
+  ?foe = dysangelos_elementalist
+    drop = dysP2Drop
   ?armor >= armorCap - capGap
     armorUp = true
-  :?armor < armorCap - capDrop
+  :?armor < armorCap - drop
     armorUp = false
   return armorUp
 
