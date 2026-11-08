@@ -168,6 +168,10 @@ func Dys3Heavy()
 // damage), so the player is in reach when
 // the armor comes: close up, the shield-up
 // stuns him. Without armor, false: wands.
+// The socketed hammers are one-handed, so
+// the right hand closes the distance with
+// the Bashing (else Dashing) Shield, and
+// holds a plain shield once in reach.
 func Dys3Hammer()
   ?foe.armor <= 0
     ?foe.state ! 32 | foe.damage > 1
@@ -180,7 +184,10 @@ func Dys3Hammer()
     c = "hammer -heavy"
   ?!gear.Has(c)
     return false
-  return gear.Both(c)
+  DashIn()
+  gear.L(c)
+  gear.R("shield -dashing -bashing")
+  return true
 
 func Run()
   DashIn()
