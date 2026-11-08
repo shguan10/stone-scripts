@@ -46,6 +46,20 @@ safe = !foe | (foe.distance>20 & foe ! boss)
 // walk the player into the boss.
 ?bosses.fightOn & foe
   safe = false
+// Fighting stays on for safeLag frames
+// after the last unsafe one: in a crowd
+// the target flips between a near foe
+// and a far or dormant one, and the
+// right hand flickered between the
+// Triskelion and the wand (recorded).
+var safeLag = 30
+var unsafeAt = -999
+?loc.begin | loc.loop
+  unsafeAt = -999
+?!safe
+  unsafeAt = totaltime
+?totaltime - unsafeAt < safeLag
+  safe = false
 // Dysangelos before his first attack, and
 // between phases, walks safely (Shane):
 // the intro holds him in state 100 for
