@@ -71,8 +71,12 @@ func Track()
   var sk = foe.id + ":" + foe.state
   ?string.Equals(sk, curKey)
     curMax = foe.time
-    ?Stacks() > curChill
-      curChill = Stacks()
+    // The stacks at the state's end, not
+    // the most seen: chill decays during a
+    // long wind-up, and the max (4, ending
+    // at 1) made the next dodge ~21 frames
+    // early (recorded, Palas).
+    curChill = Stacks()
     return
   // The state just ended: keep its length.
   ?curMax > 0
@@ -100,6 +104,28 @@ func At(st, t)
     from = lens[i] - lead + 7 * (Stacks() - lenChill[i])
   ?foe.time = 0
     win = "s" + st + " dodge@" + from
+    info = win
+  return foe.time >= from & foe.time <= from + 6
+
+// At() without the chill correction, for
+// a wind-up chill barely slows: Palas's
+// slam ran ~70 frames unchilled and 70-74
+// with chill decaying 4 -> 1 (recorded),
+// so 7 per stack put dodges up to 30
+// frames off. The learned length as is,
+// with a longer lead (t60 and t66 both
+// avoided the hit landing at ~72).
+var flatLead = 8
+
+func AtFlat(st, t)
+  ?foe.state ! st
+    return false
+  var from = t
+  var i = lenKeys.IndexOf(foe.id + ":" + st)
+  ?i >= 0
+    from = lens[i] - flatLead
+  ?foe.time = 0
+    win = "s" + st + " dodge@" + from + " flat"
     info = win
   return foe.time >= from & foe.time <= from + 6
 
@@ -154,15 +180,30 @@ var fightOn = false
 // Blade summons him, so it never fires
 // in his fight, minions included.
 var palasSeen = false
+// The last boss-tagged foe's id, for the
+// gaps between boss phases.
+var lastBoss = ""
+
+// Between the Mushroom Forest's phases:
+// the Shroom or Morel was the last boss
+// and has gone (Ekki is the last phase;
+// the minibosses are boss-tagged too).
+func ShroomGap()
+  ?foe
+    return false
+  return string.Equals(lastBoss, "mushroom_boss") |
+  ^string.Equals(lastBoss, "mushroom_boss_fat")
 
 func Dodge()
   ?loc.begin | loc.loop
     fightOn = false
     palasSeen = false
+    lastBoss = ""
     dysActive = ""
   ?foe ! boss
     return false
   fightOn = true
+  lastBoss = foe.id
   ?foe = skeleton_boss
     palasSeen = true
   Track()
@@ -210,19 +251,23 @@ func Dodge()
     return false
   // Pallas (Halls): phase 2 first, for
   // the same reason.
+  // No dodge in phase 2 (Shane): its
+  // attacks did no damage undodged
+  // (recorded), and a backflip only costs
+  // wand time.
   ?fid = skeleton_boss_stage_2
-    ?At(32, 17)
-      return Mind()
     return false
   // Phase 1's blade slam winds up 125
-  // frames at 3 stars, 90 at 4, 70 at 5+.
+  // frames at 3 stars, 90 at 4, 70 at 5+
+  // (recorded ~70 unchilled at 5+, the hit
+  // at 33 t2): 66 is that less the lead.
   ?fid = skeleton_boss
-    var slam = 68
+    var slam = 66
     ?loc.stars <= 3
       slam = 123
     :?loc.stars = 4
       slam = 88
-    ?At(32, slam)
+    ?AtFlat(32, slam)
       return Mind()
     return false
   // Bronze Guardian (Mine): the hammer,

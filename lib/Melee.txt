@@ -89,6 +89,15 @@ func Pick()
   ?fid = poena
     Hammer("stone")
     return
+  // Morel: the one-handed vigor hammer in
+  // the left while he has armor, then the
+  // vigor sword (Shane).
+  ?fid = mushroom_boss_fat
+    ?foe.armor > 0
+      Main("vigor", "hammer -heavy")
+    :
+      Main("vigor", "sword")
+    return
   ?fid = yeti
     ?foe.state = 133
       Main("fire", "wand")
@@ -121,7 +130,10 @@ func Wield()
   ?!gear.Has(l)
     l = ""
   var r = ""
-  ?foe.id ! poena
+  // Morel: always the poison shield beside
+  // the vigor sword (Shane), never a second
+  // weapon.
+  ?foe.id ! poena & foe.id ! mushroom_boss_fat
     r = debuff.Weapon(mainEl)
   ?!r
     r = Crit(element.Best(), "shield -dashing -bashing")

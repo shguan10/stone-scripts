@@ -42,13 +42,14 @@ func Abilities()
   // plain "poison wand" is not it.
   ?Tough() & debuff.Needs("debuff_damage")
     gear.Cast("wand_poison", "wand_hidden_poison", "L")
-  // Explosive Wand, on bosses that stand
-  // on the ground: it does not touch the
-  // floating Dysangelos, nor the Mushroom
-  // bosses (Shane).
-  ?Tough() & string.IndexOf(foe.id, "dysangelos") < 0 &
-  ^foe ! mushroom_boss
-    gear.Cast("wand_fire", "wand_hidden_fire", "L")
+  // Explosive Wand: its active is off on
+  // every boss (Shane); it is still held
+  // as a burn debuff wand. It never touched
+  // the floating Dysangelos nor the
+  // Mushroom bosses.
+  //?Tough() & string.IndexOf(foe.id, "dysangelos") < 0 &
+  //^foe ! mushroom_boss
+  //  gear.Cast("wand_fire", "wand_hidden_fire", "L")
   // Feeble, on bosses only. Nagaraja
   // cannot be masked. No range limit:
   // wands fight from beyond melee range.
@@ -90,6 +91,12 @@ var capDrop = 2
 // capGap.
 var dysP2Gap = 4
 var dysP2Drop = 8
+// Palas (both phases): dual wield from
+// palasArmor (Shane), back to the shield
+// below palasLow. One point apart, the
+// hands swapped every ~1.5 s (recorded).
+var palasArmor = 3
+var palasLow = 1
 var armorUp = false
 
 func ArmorFull()
@@ -100,6 +107,9 @@ func ArmorFull()
   ?foe = dysangelos_elementalist
     gap = dysP2Gap
     drop = dysP2Drop
+  :?foe = skeleton_boss
+    gap = armorCap - palasArmor
+    drop = armorCap - palasLow
   ?armor >= armorCap - gap
     armorUp = true
   :?armor < armorCap - drop
@@ -140,7 +150,7 @@ func Ranged()
   ?foe = dysangelos_bearer | foe = dysangelos_perfected | Scout()
     c = ""
     ?hp >= maxhp
-      c = debuff.Wand("")
+      c = debuff.Missing("")
     :?debuff.Needs("debuff_damage") &
     ^gear.Has("poison wand dp")
       c = "poison wand dp"
@@ -158,29 +168,55 @@ func Ranged()
   // stays when it is put away: once near
   // the cap, a debuff wand, in every fight
   // (Shane).
-  ?ArmorFull()
-    c = debuff.Wand(wandEl)
+  // Only a boss is debuffed by what it is
+  // missing: in a crowd the target changes
+  // every few frames, each with its own
+  // debuffs, and the wand followed it
+  // (recorded). Elsewhere the one in hand
+  // stays.
+  // Palas with no minions about needs no
+  // shield, in either phase (Shane): a
+  // debuff wand whatever the armor. The
+  // shield comes back for his summons.
+  // Only the uncovered P1 slam hurts (4-9,
+  // recorded).
+  // Phase 1 never summons, yet still got
+  // the shield on foe.count <= 1
+  // (recorded): it counts more than him.
+  var noShield = foe = skeleton_boss & foe ! skeleton_boss_stage_2
+  ?foe = skeleton_boss_stage_2 & foe.count <= 1
+    noShield = true
+  // 3-star Haunted Halls, before the boss:
+  // no shield in any fight (Shane, trial).
+  ?loc = halls & loc.stars = 3 & !bosses.fightOn
+    noShield = true
+  ?ArmorFull() | noShield
+    c = ""
+    ?Tough()
+      c = debuff.Wand(wandEl)
     ?string.Size(c) = 0
       c = debuff.AnyWand(wandEl)
     ?string.Size(c) > 0
       gear.R(c)
       return
-  // A counter-element shield first (Shane:
-  // poison beats the tower in the Mushroom
-  // Forest; the tower has no element
-  // versions); else the Towering Shield.
-  // The plain Stone shield never goes on
-  // in a fight while a tower is owned. The
-  // dashing ones would dash in on their
-  // own.
+  gear.R(Shield(el))
+
+// A counter-element shield first (Shane:
+// poison beats the tower in the Mushroom
+// Forest; the tower has no element
+// versions); else the Towering Shield.
+// The plain Stone shield never goes on in
+// a fight while a tower is owned. The
+// dashing ones would dash in on their own.
+func Shield(el)
   var shield = tower
   ?el
-    c = el + " shield -dashing -bashing"
+    var c = el + " shield -dashing -bashing"
     ?gear.Has(c)
       shield = c
   ?!gear.Has(shield)
     shield = "shield -dashing -bashing"
-  gear.R(shield)
+  return shield
 
 // Two-handed, so both hands or nothing,
 // and no debuffs: there is no shield to
@@ -199,9 +235,11 @@ func Crossbow(el)
 
 // Wand range, learned: the furthest a
 // boss has been when the wand started an
-// attack (state 2). Starts low so the
-// first approach does not stall short.
-var wandRange = 12
+// attack (state 2). Starts at 20, the
+// wand's range in Fuzznimp's table; at
+// 12 the stones never came out between
+// 12 and 20.
+var wandRange = 20
 
 func Run()
   ?item.left = wand & item.left.state = 2 &
@@ -215,20 +253,24 @@ func Run()
     melee.Heavy()
   Abilities()
   // Morel (the Mushroom Forest's second
-  // phase) is rushed and meleed; Bosses
-  // still dodges the big punch (Shane).
+  // phase) is rushed and meleed, vigor
+  // hammer then vigor sword; Bosses still
+  // dodges the big punch (Shane).
   ?foe = mushroom_boss_fat
     melee.Run()
     return
-  // A boss out of wand range is walked to
-  // only until it is first hit. After
-  // that the gap is usually a backflip,
-  // and walking it with the stones in
-  // hand would drop the shield. Never a
-  // dash: it lands in melee range.
-  ?foe = boss & foe.distance > wandRange &
-  ^foe.hp = foe.maxhp
-    travel.Approach()
+  // Out of wand range, walking with a wand
+  // in hand wastes time (Shane): a boss
+  // not yet hit is approached behind a
+  // shield (the Dashing one dashes in),
+  // anything else is walked to fast with
+  // the stones. Never a dash after the
+  // first hit: it lands in melee range.
+  ?foe.distance > wandRange
+    ?foe = boss & foe.hp = foe.maxhp
+      travel.Approach()
+    :
+      travel.Walk()
     return
   ?dys3
     ?melee.Dys3Hammer(ArmorFull())

@@ -69,6 +69,10 @@ func Weapon(skipEl)
 var wands = ["poison wand dp", "fire wand df", "ice wand di"]
 var wandEls = ["poison", "fire", "ice"]
 var wandIds = ["debuff_damage", "debuff_dot", "debuff_chill"]
+// Each one's name alone, for checking the
+// hand: a rune-tagged criteria never
+// matches item.right (recorded, Gear).
+var wandBases = ["poison wand", "fire wand", "ice wand"]
 var anyOrder = [1, 0, 2]
 
 // The element of debuff wand w, else "".
@@ -82,23 +86,52 @@ func El(w)
 // right hand, else -1.
 func InHand()
   var i = 0
-  for w : wands
+  for w : wandBases
     ?item.right = w
       return i
     i++
   return -1
 
+// When the debuff wand in hand was put
+// there. Each one applies its debuff in
+// about a second, so the hand rotated
+// poison, fire, ice and barely attacked
+// (recorded); at a 60-frame minimum it
+// still changed every ~2 s. So one wand
+// per wand phase: chosen when the shield
+// goes, kept until it comes back (a phase
+// runs ~6-8 s).
+var lastH = -1
+var heldAt = 0
+var minHold = 600
+
+// InHand, noting when it changed.
+func Held()
+  var h = InHand()
+  ?h ! lastH
+    lastH = h
+    heldAt = totaltime
+  return h
+
 // Wands only, for ranged fights. Skips
 // element skipEl, as Weapon does. The one
 // in hand stays while its debuff is still
-// missing: every swap restarts a wand's
-// attack.
+// missing, and for minHold frames anyway:
+// every swap restarts a wand's attack.
 func Wand(skipEl)
-  var h = InHand()
+  var h = Held()
   ?h >= 0
-    ?Needs(wandIds[h]) &
-    ^!string.Equals(skipEl, wandEls[h])
-      return wands[h]
+    ?!string.Equals(skipEl, wandEls[h])
+      ?Needs(wandIds[h])
+        return wands[h]
+      ?totaltime - heldAt < minHold
+        return wands[h]
+  return Missing(skipEl)
+
+// The first debuff wand for a missing
+// debuff, ignoring what the right hand
+// holds (for the left hand). Skips skipEl.
+func Missing(skipEl)
   ?Needs("debuff_damage") &
   ^!string.Equals(skipEl, "poison") &
   ^gear.Has("poison wand dp")
@@ -118,7 +151,7 @@ func Wand(skipEl)
 // hand, else fire, poison, ice. Skips
 // element skipEl.
 func AnyWand(skipEl)
-  var h = InHand()
+  var h = Held()
   ?h >= 0
     ?!string.Equals(skipEl, wandEls[h])
       return wands[h]
