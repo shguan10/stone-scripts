@@ -53,8 +53,6 @@ func Reset()
     triedAt.Clear()
     waitIds.Clear()
     waitUntil.Clear()
-    bestKeys.Clear()
-    bestVals.Clear()
     castAt = -999
 
 // Owned, or already in a hand.
@@ -218,45 +216,14 @@ func Hold()
     return Take(castHand, castCrit)
   return false
 
-// The highest star level owned for crit,
-// as criteria: equip only picks what
-// best fits, and picked a 0-star Poison
-// wand over the 9-star one (recorded).
-// Cached per criteria until the location
-// ends; crit itself if none matches.
-var topStar = 10
-var bestKeys = []
-var bestVals = []
-
-func Best(crit)
-  var i = bestKeys.IndexOf(crit)
-  ?i >= 0
-    return bestVals[i]
-  var b = crit
-  var n = topStar
-  var c = ""
-  ?string.IndexOf(crit, "*") < 0
-    for k = 0..topStar
-      n = topStar - k
-      c = crit + " *" + n
-      ?string.Equals(b, crit) & item.GetCount(c) > 0
-        b = c
-  bestKeys.Add(crit)
-  bestVals.Add(b)
-  return b
-
 func Apply()
-  var e = ""
   ?toB
-    e = Best(toB)
-    equip @e@
+    equip @toB@
   :
     ?toL
-      e = Best(toL)
-      equipL @e@
+      equipL @toL@
     ?toR
-      e = Best(toR)
-      equipR @e@
+      equipR @toR@
   ?actL
     activate L
   ?actR
