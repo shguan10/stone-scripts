@@ -11,6 +11,7 @@ var combat = import lib/Combat
 // Prints the target's id, state and time
 // top-left, for calibrating lib/Bosses.
 var debug = true
+var dysEls = ["fire", "ice", "aether", "vigor", "poison"]
 
 // Dysangelos's talk, auto-skipped. He is
 // the only one who talks in the Rocky
@@ -66,6 +67,16 @@ gear.Apply()
   ?foe = dysangelos
     var towers = item.GetCount(combat.tower)
     >`0,6,tower: @towers@ armor: @armor@
+  // Dysangelos P3's absorbed elements, by
+  // name, with frames left: the HUD shows
+  // them with the debuffs' symbols.
+  ?foe = dysangelos_perfected
+    var res = ""
+    for el : dysEls
+      var left = foe.buffs.GetTime("adaptive_defense_" + el)
+      ?left > 0
+        res = res + el + " " + left + "  "
+    >`0,8,resists: @res@
 
 //?foe=boss & foe.hp<foe.maxhp
   //activate potion
