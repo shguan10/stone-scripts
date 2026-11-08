@@ -174,12 +174,14 @@ func Ranged()
   // debuffs, and the wand followed it
   // (recorded). Elsewhere the one in hand
   // stays.
-  // Palas phase 2 with no minions about
-  // needs no shield (Shane): a debuff wand
-  // whatever the armor. The shield comes
-  // back for his summons.
-  var p2Alone = foe = skeleton_boss_stage_2 & foe.count <= 1
-  ?ArmorFull() | p2Alone
+  // Palas with no minions about needs no
+  // shield, in either phase (Shane): a
+  // debuff wand whatever the armor. The
+  // shield comes back for his summons.
+  // Only the uncovered P1 slam hurts (4-9,
+  // recorded).
+  var palasAlone = foe = skeleton_boss & foe.count <= 1
+  ?ArmorFull() | palasAlone
     c = ""
     ?Tough()
       c = debuff.Wand(wandEl)
