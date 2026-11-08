@@ -103,21 +103,6 @@ func At(st, t)
     info = win
   return foe.time >= from & foe.time <= from + 6
 
-// At() at the community frame only, never
-// a learned length: that assumes the hit
-// lands at the end of the state, which is
-// unverified for the Shroom's punch (a
-// state that runs on past the hit would
-// put every later dodge after it).
-func AtFixed(st, t)
-  ?foe.state ! st
-    return false
-  var from = t + 7 * Stacks()
-  ?foe.time = 0
-    win = "s" + st + " dodge@" + from + " fixed"
-    info = win
-  return foe.time >= from & foe.time <= from + 6
-
 func Mind()
   ?item.GetCooldown("mind") > 0
     // Already used on this attack?
@@ -212,13 +197,16 @@ func Dodge()
   // Angry Shroom (Mushroom): the punch.
   // Morel first: its id contains the
   // other's.
+  // Morel's 32 lasts 22 frames unchilled
+  // (recorded), so the community 26 never
+  // came: 22 less the lead.
   ?fid = mushroom_boss_fat
-    ?AtFixed(32, 26) & Mind()
-      return true
+    ?At(32, 18)
+      return Mind()
     return false
   ?fid = mushroom_boss
-    ?AtFixed(32, 46) & Mind()
-      return true
+    ?At(32, 46)
+      return Mind()
     return false
   // Pallas (Halls): phase 2 first, for
   // the same reason.
