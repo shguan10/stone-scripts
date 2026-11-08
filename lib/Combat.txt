@@ -219,7 +219,7 @@ func Run()
   // dash: it lands in melee range.
   ?foe = boss & foe.distance > wandRange &
   ^foe.hp = foe.maxhp
-    travel.Walk()
+    travel.Approach()
     return
   ?dys3
     ?melee.Dys3Hammer(ArmorFull())
