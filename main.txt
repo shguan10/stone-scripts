@@ -62,6 +62,17 @@ gear.Apply()
 ?debug
   >`0,1,L @item.left@ / R @item.right@
   >`0,5,cast: @gear.last@
+  // How many items each shield search
+  // matches: names are cut off on screen.
+  var nDash
+  var nBash
+  var nPlain
+  var nTower
+  nDash = item.GetCount("dashing shield")
+  nBash = item.GetCount("bashing shield")
+  nPlain = item.GetCount("shield -dashing -bashing -tower")
+  nTower = item.GetCount("tower")
+  >`0,9,dash @nDash@ bash @nBash@ plain @nPlain@ tower @nTower@
 ?debug & foe
   >`0,2,@foe.id@ s@foe.state@ t@foe.time@
   ?foe.debuffs.count > 0
