@@ -183,10 +183,14 @@ func Ranged()
   // Phase 1 never summons, yet still got
   // the shield on foe.count <= 1
   // (recorded): it counts more than him.
-  var palasAlone = foe = skeleton_boss & foe ! skeleton_boss_stage_2
+  var noShield = foe = skeleton_boss & foe ! skeleton_boss_stage_2
   ?foe = skeleton_boss_stage_2 & foe.count <= 1
-    palasAlone = true
-  ?ArmorFull() | palasAlone
+    noShield = true
+  // 3-star Haunted Halls, before the boss:
+  // no shield in any fight (Shane, trial).
+  ?loc = halls & loc.stars = 3 & !bosses.fightOn
+    noShield = true
+  ?ArmorFull() | noShield
     c = ""
     ?Tough()
       c = debuff.Wand(wandEl)
