@@ -18,7 +18,6 @@ var bosses = import lib/Bosses
 var arms = ["skeleton arm", "skeleton_arm"]
 var fallbackWands = ["vigor wand", "wand"]
 var tower = "towering shield"
-var towerArmor = 6
 
 func Abilities()
   ?foe.distance > 20 | bosses.DysIdle()
@@ -55,13 +54,25 @@ func Abilities()
 // while a shield is in hand (it depends
 // on the shield). High until then, so the
 // first shield goes on.
+//
+// Full from capGap below the cap until
+// it falls capDrop below: armor drains
+// slowly without a shield, and a single
+// threshold swapped shield and wand every
+// frame or two at 5.9/6.0 (recorded).
 var armorCap = 99
 var capGap = 1
+var capDrop = 2
+var armorUp = false
 
 func ArmorFull()
   ?item.right = shield
     armorCap = maxarmor
-  return armor >= armorCap - capGap
+  ?armor >= armorCap - capGap
+    armorUp = true
+  :?armor < armorCap - capDrop
+    armorUp = false
+  return armorUp
 
 // The counter wand does the damage. Once
 // armor is near its cap, a boss gets a
@@ -89,13 +100,6 @@ func Ranged()
       wandEl = "vigor"
   ?wand
     gear.L(wand)
-  // Dysangelos P2: the Towering Shield
-  // until armor is back to towerArmor,
-  // then the debuffs again.
-  ?foe = dysangelos_elementalist &
-  ^armor < towerArmor & gear.Has(tower)
-    gear.R(tower)
-    return
   // Against a boss the shield only builds
   // armor, which stays when it is put away:
   // once near the cap, a debuff wand.
