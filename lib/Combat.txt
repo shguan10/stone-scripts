@@ -186,9 +186,13 @@ func Ranged()
   var noShield = foe = skeleton_boss & foe ! skeleton_boss_stage_2
   ?foe = skeleton_boss_stage_2 & foe.count <= 1
     noShield = true
-  // 3-star Haunted Halls, before the boss:
-  // no shield in any fight (Shane, trial).
-  ?loc = halls & loc.stars = 3 & !bosses.fightOn
+  // Haunted Halls below 3 light-blue
+  // stars: no shield before the boss
+  // either (Shane), so only Palas P2's
+  // summons get one. Stars run on through
+  // the colours: white 0-5, light blue
+  // (cyan) 6-10, so cyan 3 is 8.
+  ?loc = halls & loc.stars < 8 & !bosses.fightOn
     noShield = true
   ?ArmorFull() | noShield
     c = ""
@@ -260,17 +264,14 @@ func Run()
     melee.Run()
     return
   // Out of wand range, walking with a wand
-  // in hand wastes time (Shane): a boss
-  // not yet hit is approached behind a
-  // shield (the Dashing one dashes in),
-  // anything else is walked to fast with
-  // the stones. Never a dash after the
-  // first hit: it lands in melee range.
+  // in hand wastes time (Shane): close in
+  // with the Quarterstaff's mini-dash and
+  // fast walking with the stones. Not the
+  // Dashing or Bashing shield: both end in
+  // melee range, where minions hit too
+  // (Shane).
   ?foe.distance > wandRange
-    ?foe = boss & foe.hp = foe.maxhp
-      travel.Approach()
-    :
-      travel.Walk()
+    travel.Close()
     return
   ?dys3
     ?melee.Dys3Hammer(ArmorFull())

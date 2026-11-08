@@ -3,11 +3,10 @@
 // otherwise walk with the Ouroboros
 // (heal) and the Triskelion (speed); the
 // Star Stone takes the Triskelion's hand
-// to pull in pickups (Shane). Approach,
-// for walking up to a boss, holds a
-// shield instead: the Dashing, the
-// Bashing while Dashing is on cooldown,
-// else the Towering.
+// to pull in pickups (Shane). Close, for
+// getting to wand range in a fight, does
+// the same with the Quarterstaff's dash
+// allowed at bosses.
 
 var gear = import lib/Gear
 var bosses = import lib/Bosses
@@ -29,16 +28,14 @@ func Walk()
   :
     gear.R("triskelion")
 
-func Approach()
-  gear.L("ouroboros")
-  ?item.GetCooldown("dash") <= 0 & gear.Has("dashing shield")
-    gear.R("dashing shield")
-  :?item.GetCooldown("bash") <= 0 & gear.Has("bashing shield")
-    gear.R("bashing shield")
-  :?gear.Has("tower")
-    gear.R("tower")
-  :
-    gear.R("triskelion")
+// Closing to wand range in a fight, boss
+// fights included: the Quarterstaff's
+// mini-dash while the target is beyond
+// 17 (Dash's own gate), else walking.
+func Close()
+  ?foe.distance > 17
+    gear.Cast("quarterstaff", "quarterstaff", "B")
+  Walk()
 
 func Run()
   Dash()
