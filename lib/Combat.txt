@@ -165,22 +165,24 @@ func Ranged()
     ?string.Size(c) > 0
       gear.R(c)
       return
-  // A counter-element shield first (Shane:
-  // poison beats the tower in the Mushroom
-  // Forest; the tower has no element
-  // versions); else the Towering Shield.
-  // The plain Stone shield never goes on
-  // in a fight while a tower is owned. The
-  // dashing ones would dash in on their
-  // own.
+  gear.R(Shield(el))
+
+// A counter-element shield first (Shane:
+// poison beats the tower in the Mushroom
+// Forest; the tower has no element
+// versions); else the Towering Shield.
+// The plain Stone shield never goes on in
+// a fight while a tower is owned. The
+// dashing ones would dash in on their own.
+func Shield(el)
   var shield = tower
   ?el
-    c = el + " shield -dashing -bashing"
+    var c = el + " shield -dashing -bashing"
     ?gear.Has(c)
       shield = c
   ?!gear.Has(shield)
     shield = "shield -dashing -bashing"
-  gear.R(shield)
+  return shield
 
 // Two-handed, so both hands or nothing,
 // and no debuffs: there is no shield to
