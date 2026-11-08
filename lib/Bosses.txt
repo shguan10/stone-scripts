@@ -132,6 +132,16 @@ func AtFlat(st, t)
     info = win
   return foe.time >= from & foe.time <= from + 6
 
+// A fixed 6-frame window from frame t,
+// nothing learned.
+func AtFixed(st, t)
+  ?foe.state ! st
+    return false
+  ?foe.time = 0
+    win = "s" + st + " dodge@" + t + " fixed"
+    info = win
+  return foe.time >= t & foe.time <= t + 6
+
 func Mind()
   ?item.GetCooldown("mind") > 0
     // Already used on this attack?
@@ -269,7 +279,18 @@ func Dodge()
   // frames at 3 stars, 90 at 4, 70 at 5+
   // (recorded ~70 unchilled at 5+, the hit
   // at 33 t2): 66 is that less the lead.
+  // Light blue (6+): it lands at ~84-85
+  // (four recordings, chill 0-5), once at
+  // 104 (chill 5, or it held until the
+  // player walked back in; unresolved). A
+  // t66 dodge left time to walk back into
+  // it, so a fixed t76 for every slam: the
+  // learned length only drifted.
   ?fid = skeleton_boss
+    ?loc.stars >= 6
+      ?AtFixed(32, 76)
+        return Mind()
+      return false
     var slam = 66
     ?loc.stars <= 3
       slam = 123
