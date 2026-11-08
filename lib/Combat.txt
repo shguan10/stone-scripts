@@ -149,10 +149,11 @@ func Ranged()
     c = el + " shield -dashing -bashing"
     ?gear.Has(c)
       shield = c
-  // Dysangelos P1 and P2: the Towering
-  // Shield.
-  ?(foe = dysangelos_bearer |
-  ^foe = dysangelos_elementalist) &
+  // Dysangelos, every phase: the Towering
+  // Shield. In P3 the counter element has
+  // no shield but ice, so it fell back to
+  // the plain Stone shield (Shane).
+  ?string.IndexOf(foe.id, "dysangelos") = 0 &
   ^gear.Has(tower)
     shield = tower
   gear.R(shield)
