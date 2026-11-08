@@ -17,7 +17,7 @@ var bosses = import lib/Bosses
 
 var arms = ["skeleton arm", "skeleton_arm"]
 var fallbackWands = ["vigor wand", "wand"]
-var tower = "Towering Shield"
+var tower = "to"
 
 func Abilities()
   ?foe.distance > 20 | bosses.DysIdle()
@@ -27,8 +27,10 @@ func Abilities()
   // plain "poison wand" is not it.
   ?foe = boss & debuff.Needs("debuff_damage")
     gear.Cast("wand_poison", "wand_hidden_poison", "L")
-  // Explosive Wand, on bosses.
-  ?foe = boss
+  // Explosive Wand, on bosses that stand
+  // on the ground: it does not touch the
+  // floating Dysangelos (Shane).
+  ?foe = boss & string.IndexOf(foe.id, "dysangelos") < 0
     gear.Cast("wand_fire", "wand_hidden_fire", "L")
   // Feeble, on bosses only. Nagaraja
   // cannot be masked. No range limit:

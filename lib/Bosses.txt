@@ -38,32 +38,6 @@ var curChill = 0
 func Stacks()
   return foe.debuffs.GetCount("debuff_chill")
 
-// Dysangelos P1 fires five arms, then the
-// eye laser: every laserEvery-th attack.
-// Each starts in state 32 (about 30
-// frames either way); an arm lands on
-// 33's first frame, the laser at 33 t24
-// (recorded, chilled). foe.damage does
-// not tell them apart.
-var laserEvery = 6
-var laserAt = 19
-var dysShots = 0
-var dysLast = -99
-
-func CountShots()
-  ?foe ! dysangelos_bearer
-    dysShots = 0
-    dysLast = -99
-    return
-  ?foe.state = 32 & dysLast ! 32
-    dysShots++
-  dysLast = foe.state
-
-func Laser()
-  ?dysShots <= 0
-    return false
-  return dysShots % laserEvery = 0
-
 // Dysangelos asleep, waking, or between
 // phases: abilities would be wasted. Each
 // phase counts as begun at his first
@@ -186,23 +160,19 @@ func Dodge()
     fightOn = false
     palasSeen = false
     dysActive = ""
-    dysShots = 0
   ?foe ! boss
     return false
   fightOn = true
   ?foe = skeleton_boss
     palasSeen = true
   Track()
-  CountShots()
   var fid = foe.id
-  // Dysangelos (Rocky): the eye laser
-  // only, never the arms, at a fixed
-  // frame of 33.
+  // Dysangelos (Rocky) P1: nothing. His
+  // eye laser (every 6th attack, landing
+  // at 33 t24) cannot be dodged (Shane),
+  // and the arms are not worth the Mind
+  // Stone.
   ?fid = dysangelos_bearer
-    ?Laser() & foe.state = 33 &
-    ^foe.time >= laserAt & foe.time <= laserAt + 4
-      win = "s33 laser #" + dysShots
-      return Mind()
     return false
   // The orb's beam is the only dodge: the
   // stun slam does 1 damage and stuns
