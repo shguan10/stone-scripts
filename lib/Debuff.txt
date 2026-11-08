@@ -69,6 +69,10 @@ func Weapon(skipEl)
 var wands = ["poison wand dp", "fire wand df", "ice wand di"]
 var wandEls = ["poison", "fire", "ice"]
 var wandIds = ["debuff_damage", "debuff_dot", "debuff_chill"]
+// Each one's name alone, for checking the
+// hand: a rune-tagged criteria never
+// matches item.right (recorded, Gear).
+var wandBases = ["poison wand", "fire wand", "ice wand"]
 var anyOrder = [1, 0, 2]
 
 // The element of debuff wand w, else "".
@@ -82,7 +86,7 @@ func El(w)
 // right hand, else -1.
 func InHand()
   var i = 0
-  for w : wands
+  for w : wandBases
     ?item.right = w
       return i
     i++
