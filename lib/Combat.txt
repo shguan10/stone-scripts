@@ -91,6 +91,10 @@ var capDrop = 2
 // capGap.
 var dysP2Gap = 4
 var dysP2Drop = 8
+// Palas (both phases): dual wield from
+// this much armor (Shane), back to the
+// shield one below it.
+var palasArmor = 3
 var armorUp = false
 
 func ArmorFull()
@@ -101,6 +105,9 @@ func ArmorFull()
   ?foe = dysangelos_elementalist
     gap = dysP2Gap
     drop = dysP2Drop
+  :?foe = skeleton_boss
+    gap = armorCap - palasArmor
+    drop = gap + 1
   ?armor >= armorCap - gap
     armorUp = true
   :?armor < armorCap - drop
