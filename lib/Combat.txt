@@ -113,6 +113,15 @@ func Ranged()
     wand = gear.First(fallbackWands)
     ?string.IndexOf(wand, "vigor") = 0
       wandEl = "vigor"
+  // Dysangelos P1: his arms keep armor far
+  // from the cap, so the right hand stays
+  // on the tower; the left poisons him
+  // whenever he is not (Shane).
+  ?foe = dysangelos_bearer &
+  ^debuff.Needs("debuff_damage") &
+  ^gear.Has("poison wand dp")
+    wand = "poison wand dp"
+    wandEl = "poison"
   ?wand
     gear.L(wand)
   // Against a boss the shield only builds
