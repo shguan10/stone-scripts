@@ -226,9 +226,11 @@ func Crossbow(el)
 
 // Wand range, learned: the furthest a
 // boss has been when the wand started an
-// attack (state 2). Starts low so the
-// first approach does not stall short.
-var wandRange = 12
+// attack (state 2). Starts at 20, the
+// wand's range in Fuzznimp's table; at
+// 12 the stones never came out between
+// 12 and 20.
+var wandRange = 20
 
 func Run()
   ?item.left = wand & item.left.state = 2 &
@@ -248,15 +250,18 @@ func Run()
   ?foe = mushroom_boss_fat
     melee.Run()
     return
-  // A boss out of wand range is walked to
-  // only until it is first hit. After
-  // that the gap is usually a backflip,
-  // and walking it with the stones in
-  // hand would drop the shield. Never a
-  // dash: it lands in melee range.
-  ?foe = boss & foe.distance > wandRange &
-  ^foe.hp = foe.maxhp
-    travel.Approach()
+  // Out of wand range, walking with a wand
+  // in hand wastes time (Shane): a boss
+  // not yet hit is approached behind a
+  // shield (the Dashing one dashes in),
+  // anything else is walked to fast with
+  // the stones. Never a dash after the
+  // first hit: it lands in melee range.
+  ?foe.distance > wandRange
+    ?foe = boss & foe.hp = foe.maxhp
+      travel.Approach()
+    :
+      travel.Walk()
     return
   ?dys3
     ?melee.Dys3Hammer(ArmorFull())

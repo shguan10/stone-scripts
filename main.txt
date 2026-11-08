@@ -113,7 +113,7 @@ gear.Apply()
   nTower = item.GetCount("tower")
   >`0,9,dash @nDash@ bash @nBash@ plain @nPlain@ tower @nTower@
 ?debug & foe
-  >`0,2,@foe.id@ s@foe.state@ t@foe.time@
+  >`0,2,@foe.id@ s@foe.state@ t@foe.time@ d@foe.distance@
   ?foe.debuffs.count > 0
     >`0,3,@foe.debuffs.string@
   ?foe = boss
