@@ -12,6 +12,14 @@ var combat = import lib/Combat
 // top-left, for calibrating lib/Bosses.
 var debug = true
 
+// Dysangelos's talk, auto-skipped. He is
+// the only one who talks in the Rocky
+// Plateau.
+?loc = rocky
+  disable npcDialog
+:
+  enable npcDialog
+
 ?item.left.state=3
   equipL st
   equipL @item.left@

@@ -17,6 +17,8 @@ var bosses = import lib/Bosses
 
 var arms = ["skeleton arm", "skeleton_arm"]
 var fallbackWands = ["vigor wand", "wand"]
+var tower = "towering shield"
+var towerArmor = 6
 
 func Abilities()
   ?foe.distance > 20
@@ -65,6 +67,13 @@ func Ranged()
       wandEl = "vigor"
   ?wand
     gear.L(wand)
+  // Dysangelos P2: the Towering Shield
+  // until armor is back to towerArmor,
+  // then the debuffs again.
+  ?foe = dysangelos_elementalist &
+  ^armor < towerArmor & gear.Has(tower)
+    gear.R(tower)
+    return
   ?foe = boss
     c = debuff.Wand(wandEl)
     ?string.Size(c) > 0

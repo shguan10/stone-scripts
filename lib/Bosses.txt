@@ -95,6 +95,30 @@ func Mind()
   info = win + " hand taken"
   return false
 
+// Dysangelos P3's orb (state 115): its
+// beam is warned of by a "!" over the
+// player (Fuzznimp), else is dodged at a
+// fixed frame 70 (livercat, Fuzznimp).
+// Not At(): the beam is the orb's, so
+// neither the cast's length nor chill
+// says when it fires.
+func Warned()
+  var x = screen.FromWorldX(pos.x)
+  var y = screen.FromWorldZ(pos.z - pos.y)
+  return string.Equals(draw.GetSymbol(x + 1, y - 8), "!")
+
+func Orb()
+  ?foe.time = 0
+    win = "s115 orb"
+    info = win
+  ?foe.time >= 25 & Warned()
+    win = "s115 orb !"
+    return Mind()
+  ?foe.time >= 70 & foe.time <= 76
+    win = "s115 orb t70"
+    return Mind()
+  return false
+
 // Returns true if this frame dodges.
 // A boss has been seen in this location.
 // Stays set while a summoned minion is
@@ -125,12 +149,13 @@ func Dodge()
     ?loc.stars < 11 & At(32, 28)
       return Mind()
     return false
+  // The orb's beam is the only dodge: the
+  // stun slam does 1 damage and stuns
+  // only up close, and the Mind Stone
+  // must be off cooldown for the beam.
   ?fid = dysangelos_perfected
-    ?At(115, 60)
-      return Mind()
-    // Stun slam: the 32 that does 1 damage.
-    ?foe.damage <= 1 & At(32, 58)
-      return Mind()
+    ?foe.state = 115
+      return Orb()
     return false
   // Xyloalgia (Deadwood). Poena has no
   // dodge here; Debuff stops feeding her
