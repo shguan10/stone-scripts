@@ -172,9 +172,13 @@ func Dys3Heavy()
 // the right hand closes the distance with
 // the Bashing (else Dashing) Shield, and
 // holds the Towering Shield once in reach.
+// With armor near its cap (full, from
+// Combat) the tower adds nothing: a wand
+// for a missing debuff, else the other
+// hammer (Shane).
 var inReach = ["tower", "shield -dashing -bashing"]
 
-func Dys3Hammer()
+func Dys3Hammer(full)
   ?foe.armor <= 0
     ?foe.state ! 32 | foe.damage > 1
       return false
@@ -188,6 +192,16 @@ func Dys3Hammer()
     return false
   DashIn()
   gear.L(c)
+  ?full
+    var w = debuff.Wand("")
+    ?!w
+      w = "fire hammer -heavy"
+      ?string.Equals(el, "fire")
+        w = "vigor hammer -heavy"
+      ?!gear.Has(w) | string.Equals(w, c)
+        w = ""
+    ?w
+      gear.R(w)
   var r = gear.First(inReach)
   ?r
     gear.R(r)

@@ -197,7 +197,7 @@ func Run()
     travel.Walk()
     return
   ?dys3
-    ?melee.Dys3Hammer()
+    ?melee.Dys3Hammer(ArmorFull())
       return
   Ranged()
   // Crossbows, for when they come back:
