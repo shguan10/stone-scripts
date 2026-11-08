@@ -18,6 +18,7 @@ var bosses = import lib/Bosses
 var arms = ["skeleton arm", "skeleton_arm"]
 var fallbackWands = ["vigor wand", "wand"]
 var tower = "tower"
+var lifesteal = "vigor wand dl"
 
 func Abilities()
   ?foe.distance > 20 | bosses.DysIdle()
@@ -113,23 +114,28 @@ func Ranged()
     wand = gear.First(fallbackWands)
     ?string.IndexOf(wand, "vigor") = 0
       wandEl = "vigor"
-  // Dysangelos P1: his arms keep armor far
-  // from the cap, so the right hand stays
-  // on the tower and the left debuffs. At
-  // full HP, any missing debuff; below it,
-  // the lifesteal vigor wand, swapped only
-  // for poison when he is not poisoned
-  // (Shane).
-  ?foe = dysangelos_bearer
+  // Dysangelos P1 and P3, the left hand
+  // (Shane): at full HP, any missing
+  // debuff; below it, the lifesteal vigor
+  // wand, swapped only for poison when he
+  // is not poisoned. P3 keeps the wand of
+  // an element he does not resist when he
+  // resists vigor.
+  ?foe = dysangelos_bearer | foe = dysangelos_perfected
     c = ""
     ?hp >= maxhp
       c = debuff.Wand("")
     :?debuff.Needs("debuff_damage") &
     ^gear.Has("poison wand dp")
       c = "poison wand dp"
+    :?foe.buffs.string ! adaptive_defense_vigor &
+    ^gear.Has(lifesteal)
+      c = lifesteal
     ?string.Size(c) > 0
       wand = c
       wandEl = debuff.El(c)
+      ?string.Equals(c, lifesteal)
+        wandEl = "vigor"
   ?wand
     gear.L(wand)
   // Against a boss the shield only builds
