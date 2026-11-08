@@ -107,6 +107,28 @@ func At(st, t)
     info = win
   return foe.time >= from & foe.time <= from + 6
 
+// At() without the chill correction, for
+// a wind-up chill barely slows: Palas's
+// slam ran ~70 frames unchilled and 70-74
+// with chill decaying 4 -> 1 (recorded),
+// so 7 per stack put dodges up to 30
+// frames off. The learned length as is,
+// with a longer lead (t60 and t66 both
+// avoided the hit landing at ~72).
+var flatLead = 8
+
+func AtFlat(st, t)
+  ?foe.state ! st
+    return false
+  var from = t
+  var i = lenKeys.IndexOf(foe.id + ":" + st)
+  ?i >= 0
+    from = lens[i] - flatLead
+  ?foe.time = 0
+    win = "s" + st + " dodge@" + from + " flat"
+    info = win
+  return foe.time >= from & foe.time <= from + 6
+
 func Mind()
   ?item.GetCooldown("mind") > 0
     // Already used on this attack?
@@ -243,7 +265,7 @@ func Dodge()
       slam = 123
     :?loc.stars = 4
       slam = 88
-    ?At(32, slam)
+    ?AtFlat(32, slam)
       return Mind()
     return false
   // Bronze Guardian (Mine): the hammer,

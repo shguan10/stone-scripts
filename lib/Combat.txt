@@ -150,7 +150,7 @@ func Ranged()
   ?foe = dysangelos_bearer | foe = dysangelos_perfected | Scout()
     c = ""
     ?hp >= maxhp
-      c = debuff.Wand("")
+      c = debuff.Missing("")
     :?debuff.Needs("debuff_damage") &
     ^gear.Has("poison wand dp")
       c = "poison wand dp"

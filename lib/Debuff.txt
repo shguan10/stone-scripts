@@ -94,12 +94,16 @@ func InHand()
 
 // When the debuff wand in hand was put
 // there. Each one applies its debuff in
-// about a second, so without a minimum
-// the hand rotated poison, fire, ice and
-// barely attacked (recorded).
+// about a second, so the hand rotated
+// poison, fire, ice and barely attacked
+// (recorded); at a 60-frame minimum it
+// still changed every ~2 s. So one wand
+// per wand phase: chosen when the shield
+// goes, kept until it comes back (a phase
+// runs ~6-8 s).
 var lastH = -1
 var heldAt = 0
-var minHold = 60
+var minHold = 600
 
 // InHand, noting when it changed.
 func Held()
@@ -122,6 +126,12 @@ func Wand(skipEl)
         return wands[h]
       ?totaltime - heldAt < minHold
         return wands[h]
+  return Missing(skipEl)
+
+// The first debuff wand for a missing
+// debuff, ignoring what the right hand
+// holds (for the left hand). Skips skipEl.
+func Missing(skipEl)
   ?Needs("debuff_damage") &
   ^!string.Equals(skipEl, "poison") &
   ^gear.Has("poison wand dp")
