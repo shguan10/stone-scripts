@@ -251,9 +251,11 @@ func Dodge()
     return false
   // Pallas (Halls): phase 2 first, for
   // the same reason.
+  // No dodge in phase 2 (Shane): its
+  // attacks did no damage undodged
+  // (recorded), and a backflip only costs
+  // wand time.
   ?fid = skeleton_boss_stage_2
-    ?At(32, 17)
-      return Mind()
     return false
   // Phase 1's blade slam winds up 125
   // frames at 3 stars, 90 at 4, 70 at 5+
