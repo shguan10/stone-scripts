@@ -215,11 +215,16 @@ func Run()
     melee.Heavy()
   Abilities()
   // Morel (the Mushroom Forest's second
-  // phase) is rushed and meleed; Bosses
+  // phase): rushed and hammered while he
+  // has armor, else the poison wand; the
+  // right hand as at range, and Bosses
   // still dodges the big punch (Shane).
-  ?foe = mushroom_boss_fat
-    melee.Run()
-    return
+  // The hammer claims the left hand first,
+  // so Ranged's wand there is ignored.
+  ?foe = mushroom_boss_fat & foe.armor > 0
+    ?melee.ArmorHammer()
+      Ranged()
+      return
   // A boss out of wand range is walked to
   // only until it is first hit. After
   // that the gap is usually a backflip,
