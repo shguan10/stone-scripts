@@ -65,9 +65,33 @@ func Weapon(skipEl)
     w = gear.First(iceOnes)
   return w
 
+// The debuff each wand applies, by index.
+var wands = ["poison wand dp", "fire wand df", "ice wand di"]
+var wandEls = ["poison", "fire", "ice"]
+var wandIds = ["debuff_damage", "debuff_dot", "debuff_chill"]
+var anyOrder = [1, 0, 2]
+
+// The index of the debuff wand in the
+// right hand, else -1.
+func InHand()
+  var i = 0
+  for w : wands
+    ?item.right = w
+      return i
+    i++
+  return -1
+
 // Wands only, for ranged fights. Skips
-// element skipEl, as Weapon does.
+// element skipEl, as Weapon does. The one
+// in hand stays while its debuff is still
+// missing: every swap restarts a wand's
+// attack.
 func Wand(skipEl)
+  var h = InHand()
+  ?h >= 0
+    ?Needs(wandIds[h]) &
+    ^!string.Equals(skipEl, wandEls[h])
+      return wands[h]
   ?Needs("debuff_damage") &
   ^!string.Equals(skipEl, "poison") &
   ^gear.Has("poison wand dp")
@@ -80,4 +104,19 @@ func Wand(skipEl)
   ^!string.Equals(skipEl, "ice") &
   ^gear.Has("ice wand di")
     return "ice wand di"
+  return ""
+
+// A debuff wand for its damage alone,
+// when nothing is missing: the one in
+// hand, else fire, poison, ice. Skips
+// element skipEl.
+func AnyWand(skipEl)
+  var h = InHand()
+  ?h >= 0
+    ?!string.Equals(skipEl, wandEls[h])
+      return wands[h]
+  for j : anyOrder
+    ?!string.Equals(skipEl, wandEls[j]) &
+    ^gear.Has(wands[j])
+      return wands[j]
   return ""

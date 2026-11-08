@@ -61,6 +61,7 @@ gear.Apply()
     >`0,3,@foe.debuffs.string@
   ?foe = boss
     >`0,4,dodge: @bosses.info@
+    >`0,7,buffs: @foe.buffs.string@ cap: @combat.armorCap@
   // Whether the Towering Shield is found.
   ?foe = dysangelos_elementalist
     var towers = item.GetCount(combat.tower)

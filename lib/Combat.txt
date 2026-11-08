@@ -24,8 +24,13 @@ func Abilities()
   ?foe.distance > 20 | bosses.DysIdle()
     return
   // Plague Wand: weaken, if not on yet.
+  // The hidden wands are found by id: a
+  // plain "poison wand" is not it.
   ?foe = boss & debuff.Needs("debuff_damage")
-    gear.Cast("wand_poison", "poison wand", "L")
+    gear.Cast("wand_poison", "wand_hidden_poison", "L")
+  // Explosive Wand, on bosses.
+  ?foe = boss
+    gear.Cast("wand_fire", "wand_hidden_fire", "L")
   // Feeble, on bosses only. Nagaraja
   // cannot be masked. No range limit:
   // wands fight from beyond melee range.
@@ -46,13 +51,30 @@ func Abilities()
   ?!bosses.palasSeen
     gear.Cast("blade", "blade", "B")
 
-// The counter wand does the damage. A boss
-// missing a debuff gets the wand that
-// applies it in place of the shield, of a
-// different element (one item cannot be
-// in both hands).
+// The armor cap, read from maxarmor only
+// while a shield is in hand (it depends
+// on the shield). High until then, so the
+// first shield goes on.
+var armorCap = 99
+var capGap = 1
+
+func ArmorFull()
+  ?item.right = shield
+    armorCap = maxarmor
+  return armor >= armorCap - capGap
+
+// The counter wand does the damage. Once
+// armor is near its cap, a boss gets a
+// debuff wand in place of the shield, of
+// a different element (one item cannot be
+// in both hands): one applying a missing
+// debuff, else any.
 func Ranged()
   var el = element.Best()
+  // Dysangelos P3 resists the element
+  // that hurt him most at each shield-up.
+  ?foe = dysangelos_perfected
+    el = melee.DysWeakness()
   var wand = ""
   var wandEl = ""
   var c = ""
@@ -74,8 +96,13 @@ func Ranged()
   ^armor < towerArmor & gear.Has(tower)
     gear.R(tower)
     return
-  ?foe = boss
+  // Against a boss the shield only builds
+  // armor, which stays when it is put away:
+  // once near the cap, a debuff wand.
+  ?foe = boss & ArmorFull()
     c = debuff.Wand(wandEl)
+    ?string.Size(c) = 0
+      c = debuff.AnyWand(wandEl)
     ?string.Size(c) > 0
       gear.R(c)
       return
