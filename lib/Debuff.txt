@@ -96,14 +96,17 @@ func InHand()
 // there. Each one applies its debuff in
 // about a second, so the hand rotated
 // poison, fire, ice and barely attacked
-// (recorded); at a 60-frame minimum it
-// still changed every ~2 s. So one wand
-// per wand phase: chosen when the shield
-// goes, kept until it comes back (a phase
-// runs ~6-8 s).
+// (recorded); so a wand stays at least
+// minHold frames. At 600 (one wand per
+// shield phase) Palas, who no longer
+// takes the shield, kept the fire wand
+// 10 s while burned with poison and
+// chill gone (recorded). Debuffs last
+// after the wand leaves: burn ~11 s,
+// poison and chill ~3 s (recorded).
 var lastH = -1
 var heldAt = 0
-var minHold = 600
+var minHold = 60
 
 // InHand, noting when it changed.
 func Held()
