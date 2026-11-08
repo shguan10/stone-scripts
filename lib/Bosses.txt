@@ -53,13 +53,24 @@ func Kind()
   return ""
 
 // Dysangelos asleep, waking, or between
-// phases: abilities would be wasted.
-// States from alexbarker234's script.
-var dysIdle = [-1, 0, 102, 116, 117, 124, 127]
+// phases: abilities would be wasted. Each
+// phase counts as begun at his first
+// attack (state 2, 32 or 33): the intro
+// passes through states no list caught
+// (126, 118 in a recording). The states
+// below also count as idle afterwards
+// (alexbarker234's script).
+var dysIdle = [-1, 0, 102, 116, 117, 124, 126, 127]
+var dysAttacks = [2, 32, 33]
+var dysActive = ""
 
 func DysIdle()
   ?string.IndexOf(foe.id, "dysangelos") < 0
     return false
+  ?dysAttacks.Contains(foe.state)
+    dysActive = foe.id
+  ?!string.Equals(dysActive, foe.id)
+    return true
   ?dysIdle.Contains(foe.state)
     return true
   ?foe = dysangelos_bearer
@@ -162,6 +173,7 @@ func Dodge()
   ?loc.begin | loc.loop
     fightOn = false
     palasSeen = false
+    dysActive = ""
   ?foe ! boss
     return false
   fightOn = true

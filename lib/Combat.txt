@@ -113,6 +113,12 @@ func Ranged()
     c = el + " shield -dashing -bashing"
     ?gear.Has(c)
       shield = c
+  // Dysangelos P1 and P2: the Towering
+  // Shield.
+  ?(foe = dysangelos_bearer |
+  ^foe = dysangelos_elementalist) &
+  ^gear.Has(tower)
+    shield = tower
   gear.R(shield)
 
 // Two-handed, so both hands or nothing,
