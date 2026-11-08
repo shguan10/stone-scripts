@@ -180,7 +180,12 @@ func Ranged()
   // shield comes back for his summons.
   // Only the uncovered P1 slam hurts (4-9,
   // recorded).
-  var palasAlone = foe = skeleton_boss & foe.count <= 1
+  // Phase 1 never summons, yet still got
+  // the shield on foe.count <= 1
+  // (recorded): it counts more than him.
+  var palasAlone = foe = skeleton_boss & foe ! skeleton_boss_stage_2
+  ?foe = skeleton_boss_stage_2 & foe.count <= 1
+    palasAlone = true
   ?ArmorFull() | palasAlone
     c = ""
     ?Tough()
