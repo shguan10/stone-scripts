@@ -26,7 +26,13 @@ var lifesteal = "vigor wand dl"
 // (recorded). Mask and poison both cut
 // its damage.
 func Tough()
-  return foe = boss | foe = acronian_scout
+  return foe = boss | Scout()
+
+// The Scout is boss-tagged (the debug
+// dodge row shows for it); matched by id
+// string, in case a search filter misses.
+func Scout()
+  return string.Equals(foe.id, "acronian_scout")
 
 func Abilities()
   ?foe.distance > 20 | bosses.DysIdle()
@@ -129,8 +135,7 @@ func Ranged()
   // is not poisoned. P3 keeps the wand of
   // an element he does not resist when he
   // resists vigor.
-  ?foe = dysangelos_bearer | foe = dysangelos_perfected |
-  ^foe = acronian_scout
+  ?foe = dysangelos_bearer | foe = dysangelos_perfected | Scout()
     c = ""
     ?hp >= maxhp
       c = debuff.Wand("")
