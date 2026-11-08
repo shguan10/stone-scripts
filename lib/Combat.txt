@@ -17,7 +17,7 @@ var bosses = import lib/Bosses
 
 var arms = ["skeleton arm", "skeleton_arm"]
 var fallbackWands = ["vigor wand", "wand"]
-var tower = "to"
+var tower = "tower"
 
 func Abilities()
   ?foe.distance > 20 | bosses.DysIdle()
