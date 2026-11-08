@@ -1,7 +1,9 @@
 // Travel: moving between fights. Dash
 // with the Quarterstaff when it is up;
-// otherwise walk with the Triskelion
-// (speed) and the Ouroboros (heal).
+// otherwise walk with the Ouroboros
+// (heal) and a shield: the Dashing, the
+// Bashing while Dashing is on cooldown,
+// else the Towering (Shane).
 // The Star Stone takes the Ouroboros's
 // hand to pull in pickups.
 
@@ -22,7 +24,14 @@ func Walk()
   ?pickup & pickup.distance < 10
     gear.L("star")
   gear.L("ouroboros")
-  gear.R("triskelion")
+  ?item.GetCooldown("dash") <= 0 & gear.Has("dashing shield")
+    gear.R("dashing shield")
+  :?item.GetCooldown("bash") <= 0 & gear.Has("bashing shield")
+    gear.R("bashing shield")
+  :?gear.Has("tower")
+    gear.R("tower")
+  :
+    gear.R("triskelion")
 
 func Run()
   Dash()

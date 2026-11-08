@@ -159,14 +159,14 @@ func Ranged()
       return
   // Plain shield: the dashing ones would
   // dash in on their own.
-  // Against a boss-treated foe the default
-  // is the Towering Shield, not the plain
-  // Stone one (Shane); a counter-element
-  // shield still comes first. Dysangelos
-  // always gets the tower: in P3 the only
-  // counter shield owned is ice.
+  // The plain shield never goes on over
+  // the Towering one (Shane); a counter-
+  // element shield still comes first.
+  // Dysangelos always gets the tower: in
+  // P3 the only counter shield owned is
+  // ice.
   var shield = "shield -dashing -bashing"
-  ?Tough() & gear.Has(tower)
+  ?gear.Has(tower)
     shield = tower
   ?el
     c = el + " shield -dashing -bashing"
