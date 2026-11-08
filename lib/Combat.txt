@@ -162,24 +162,20 @@ func Ranged()
     ?string.Size(c) > 0
       gear.R(c)
       return
-  // Plain shield: the dashing ones would
-  // dash in on their own.
-  // The plain shield never goes on over
-  // the Towering one (Shane); a counter-
-  // element shield still comes first.
-  // Dysangelos always gets the tower: in
-  // P3 the only counter shield owned is
-  // ice.
-  var shield = "shield -dashing -bashing"
-  ?gear.Has(tower)
-    shield = tower
+  // The Towering Shield at least: a plain
+  // shield never goes on in a fight, not
+  // even a counter-element one (Shane). A
+  // counter-element tower, if owned. The
+  // dashing ones would dash in on their
+  // own; a plain shield only without any
+  // tower.
+  var shield = tower
   ?el
-    c = el + " shield -dashing -bashing"
+    c = el + " " + tower
     ?gear.Has(c)
       shield = c
-  ?string.IndexOf(foe.id, "dysangelos") = 0 &
-  ^gear.Has(tower)
-    shield = tower
+  ?!gear.Has(shield)
+    shield = "shield -dashing -bashing"
   gear.R(shield)
 
 // Two-handed, so both hands or nothing,
