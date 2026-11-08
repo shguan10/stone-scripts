@@ -61,6 +61,10 @@ gear.Apply()
     >`0,3,@foe.debuffs.string@
   ?foe = boss
     >`0,4,dodge: @bosses.info@
+  // Whether the Towering Shield is found.
+  ?foe = dysangelos_elementalist
+    var towers = item.GetCount(combat.tower)
+    >`0,6,tower: @towers@ armor: @armor@
 
 //?foe=boss & foe.hp<foe.maxhp
   //activate potion
