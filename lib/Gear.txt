@@ -30,6 +30,16 @@ var castAt = -999
 var triedIds = []
 var triedAt = []
 
+// Abilities that were not ready when
+// tried, and the frame each may be tried
+// again. Some have conditions besides the
+// cooldown (the Blade fires once, then is
+// not ready again for a long while), and
+// each try takes the wand or shield off.
+var retryGap = 300
+var waitIds = []
+var waitUntil = []
+
 func Reset()
   toL = ""
   toR = ""
@@ -41,6 +51,8 @@ func Reset()
   ?loc.begin | loc.loop
     triedIds.Clear()
     triedAt.Clear()
+    waitIds.Clear()
+    waitUntil.Clear()
     castAt = -999
 
 // Owned, or already in a hand.
@@ -102,6 +114,14 @@ func MarkTry(abil)
   :
     triedAt.Emplace(i, totaltime)
 
+func Defer(abil)
+  var i = waitIds.IndexOf(abil)
+  ?i < 0
+    waitIds.Add(abil)
+    waitUntil.Add(totaltime + retryGap)
+  :
+    waitUntil.Emplace(i, totaltime + retryGap)
+
 // Equip crit and fire its ability, if
 // the hand is free and it is off
 // cooldown. abil is the cooldown id
@@ -113,20 +133,31 @@ func MarkTry(abil)
 // fails ("Fallo"). So the first frames
 // only equip, and the ability fires once
 // the game reports it ready. An item that
-// never gets ready (too few stars) is
-// given up on after 15 frames.
+// is held 5 frames and still not ready
+// goes back, and is tried again after
+// retryGap frames.
 var pendAbil = ""
 var pendAt = -999
+var pendStart = -999
 
 // For debug: what Cast last did.
 var last = ""
 
-func Cast(abil, crit, hand)
-  ?!Free(hand) | !Has(crit)
+// Owned, off cooldown and not waiting
+// out a refusal.
+func Ready(abil, crit)
+  ?!Has(crit) | !item.CanActivate()
     return false
   ?item.GetCooldown(abil) > 0
     return false
-  ?!item.CanActivate()
+  var wi = waitIds.IndexOf(abil)
+  ?wi >= 0
+    ?totaltime < waitUntil[wi]
+      return false
+  return true
+
+func Cast(abil, crit, hand)
+  ?!Free(hand) | !Ready(abil, crit)
     return false
   ?totaltime - LastTry(abil) < 90
     return false
@@ -143,13 +174,23 @@ func Cast(abil, crit, hand)
     castHand = hand
     castAt = totaltime
     return true
-  // Not in hand yet: keep equipping it.
+  // Not ready: keep equipping it. Only
+  // frames with it in hand count, since a
+  // swap can be held up (e.g. mid-dodge).
+  // Capped at 2 seconds overall, in case
+  // the in-hand test misses a name.
+  var held = item.left = crit | item.right = crit
   var waited = totaltime - pendAt
-  ?!string.Equals(pendAbil, abil) | waited > 60
+  ?!string.Equals(pendAbil, abil) |
+  ^totaltime - pendStart > 150
     pendAbil = abil
     pendAt = totaltime
-  :?waited > 15
+    pendStart = totaltime
+  :?!held & totaltime - pendStart <= 60
+    pendAt = totaltime
+  :?waited > 5
     MarkTry(abil)
+    Defer(abil)
     pendAbil = ""
     last = abil + " never ready t" + totaltime
   return true

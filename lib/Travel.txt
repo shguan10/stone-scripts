@@ -6,8 +6,14 @@
 // hand to pull in pickups.
 
 var gear = import lib/Gear
+var bosses = import lib/Bosses
 
+// Not in a boss fight, minions included:
+// the dash ends in the boss's melee
+// range, and fights stay ranged.
 func Dash()
+  ?foe = boss | bosses.fightOn
+    return false
   ?foe & foe.distance <= 17
     return false
   return gear.Cast("quarterstaff", "quarterstaff", "B")

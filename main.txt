@@ -12,6 +12,14 @@ var combat = import lib/Combat
 // top-left, for calibrating lib/Bosses.
 var debug = true
 
+// Dysangelos's talk, auto-skipped. He is
+// the only one who talks in the Rocky
+// Plateau.
+?loc = rocky
+  disable npcDialog
+:
+  enable npcDialog
+
 ?item.left.state=3
   equipL st
   equipL @item.left@
@@ -26,6 +34,11 @@ var debug = true
 var safe
 safe = !foe | (foe.distance>20 & foe ! boss)
 ^| (foe = boss & foe.state=0 & hp = maxhp)
+// Never once a boss fight is on: a far
+// summoned minion would have the stones
+// walk the player into the boss.
+?bosses.fightOn & foe
+  safe = false
 
 // Highest priority first: each hand goes
 // to the first module that asks for it.
@@ -48,6 +61,11 @@ gear.Apply()
     >`0,3,@foe.debuffs.string@
   ?foe = boss
     >`0,4,dodge: @bosses.info@
+    >`0,7,buffs: @foe.buffs.string@ cap: @combat.armorCap@
+  // Whether the Towering Shield is found.
+  ?foe = dysangelos_elementalist
+    var towers = item.GetCount(combat.tower)
+    >`0,6,tower: @towers@ armor: @armor@
 
 //?foe=boss & foe.hp<foe.maxhp
   //activate potion

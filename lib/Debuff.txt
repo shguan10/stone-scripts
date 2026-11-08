@@ -29,15 +29,23 @@ func Can(id)
   var tag = "immune_to_" + id
   return foe ! tag
 
-// Missing outright. Refreshing early
-// would swap weapons mid-attack, which
-// costs more than the gap.
+// Below its target stacks: venom (weaken)
+// at 1, chill stacked to 5, burn only
+// when missing. Venom did not stack past
+// 1 in game, though the wiki says weaken
+// stacks.
+var venomStacks = 1
+var chillStacks = 5
+
 func Needs(id)
   ?!Can(id)
     return false
+  var n = foe.debuffs.GetCount(id)
+  ?id = "debuff_damage"
+    return n < venomStacks
   ?id = "debuff_chill"
-    return foe.debuffs.GetCount(id) < 6
-  return foe.debuffs.GetCount(id) = 0
+    return n < chillStacks
+  return n = 0
 
 // Poison first, then burn, then chill.
 // "" when nothing is missing or no
@@ -57,9 +65,33 @@ func Weapon(skipEl)
     w = gear.First(iceOnes)
   return w
 
+// The debuff each wand applies, by index.
+var wands = ["poison wand dp", "fire wand df", "ice wand di"]
+var wandEls = ["poison", "fire", "ice"]
+var wandIds = ["debuff_damage", "debuff_dot", "debuff_chill"]
+var anyOrder = [1, 0, 2]
+
+// The index of the debuff wand in the
+// right hand, else -1.
+func InHand()
+  var i = 0
+  for w : wands
+    ?item.right = w
+      return i
+    i++
+  return -1
+
 // Wands only, for ranged fights. Skips
-// element skipEl, as Weapon does.
+// element skipEl, as Weapon does. The one
+// in hand stays while its debuff is still
+// missing: every swap restarts a wand's
+// attack.
 func Wand(skipEl)
+  var h = InHand()
+  ?h >= 0
+    ?Needs(wandIds[h]) &
+    ^!string.Equals(skipEl, wandEls[h])
+      return wands[h]
   ?Needs("debuff_damage") &
   ^!string.Equals(skipEl, "poison") &
   ^gear.Has("poison wand dp")
@@ -72,4 +104,19 @@ func Wand(skipEl)
   ^!string.Equals(skipEl, "ice") &
   ^gear.Has("ice wand di")
     return "ice wand di"
+  return ""
+
+// A debuff wand for its damage alone,
+// when nothing is missing: the one in
+// hand, else fire, poison, ice. Skips
+// element skipEl.
+func AnyWand(skipEl)
+  var h = InHand()
+  ?h >= 0
+    ?!string.Equals(skipEl, wandEls[h])
+      return wands[h]
+  for j : anyOrder
+    ?!string.Equals(skipEl, wandEls[j]) &
+    ^gear.Has(wands[j])
+      return wands[j]
   return ""

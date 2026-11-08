@@ -7,15 +7,15 @@ from this repo with `import`.
 
 | File | |
 |---|---|
-| `main.txt` | The Mind Stone script itself: runs the modules below in priority order. Set `debug` to print the target's id, state and time. |
+| `main.txt` | The Mind Stone script itself: runs the modules below in priority order. Once a boss has been seen in the location, a far foe no longer counts as safe, so the player is not walked into the boss with the stones. Set `debug` to print the target's id, state and time. |
 | `lib/Gear.txt` | One frame's equip and ability requests. The first module to ask for a hand gets it; `Cast` keeps an ability's item held while it winds up. |
 | `lib/Bosses.txt` | Mind Stone backflips out of each boss's avoidable attacks. Frame timings are community values; recalibrate here. |
 | `lib/Harvest.txt` | Hatchet for trees, Shovel for the rest, and their abilities only while harvesting. |
-| `lib/Travel.txt` | Out of combat: Quarterstaff dash, else Triskelion + Ouroboros (Star Stone near pickups). |
-| `lib/Combat.txt` | Mask (bosses only), Skeleton Arm and Blade abilities. A wand and shield of the countering element; against a boss missing a debuff, the wand that applies it replaces the shield. Crossbows and melee are commented out in `Run`. |
+| `lib/Travel.txt` | Out of combat: Quarterstaff dash (never once a boss has been seen in the location, so not at its minions either), else Triskelion + Ouroboros (Star Stone near pickups). |
+| `lib/Combat.txt` | Mask (bosses only) and Blade abilities whenever off cooldown (the Skeleton Arm's is commented out); one the game will not fire goes back after 5 frames and is retried every 10 s. Never the Blade once Palas has been seen in the location (his minions included): its ability summons him, so the game refuses it. A wand and shield of the countering element; against a boss missing a debuff, the wand that applies it replaces the shield. A boss out of wand range is walked to only until it is first hit, so a backflip is not undone. Crossbows and melee are commented out in `Run`. |
 | `lib/Melee.txt` | Boss fights: Bashing (else Dashing) Shield to close in, then each boss's best melee weapons (the list is at the top of the file). Two hands never hold the same item, so the second hand gets a different element. |
 | `lib/Element.txt` | Which element beats the target, else the location. |
-| `lib/Debuff.txt` | Against bosses: the weapon (sword, else wand) that applies whichever of weaken, burn and chill is missing. |
+| `lib/Debuff.txt` | Against bosses: the weapon (sword, else wand) that applies whichever of venom (weaken, 1 stack), burn and chill (stacked to 5) is below target, in that order. |
 | `UI/MindstoneButton.txt`, `Cosmetics/WitchBroom.txt`, `Hats/WitchHat.txt` | Copies of the official library scripts `main.txt` imports, taken unchanged from `stonestoryrpg.com/stonescript/`. They have to live here because once the game is pointed at this repo, *every* `import` resolves against it. They do not update themselves; re-download them to pick up upstream changes. |
 
 ## The loader
@@ -71,3 +71,48 @@ phone's storage, as on desktop, is never read. Loading from a URL is the only wa
 
 Tested on Android (OnePlus Nord N200, Android 12) with game version 4.33.0. The comment trick
 matches what iOS players report.
+
+## Debugging a fight from a screen recording
+
+With `debug = true` in `main.txt`, the top-left of the screen shows what the script sees: both
+hands, the target's id/state/time, its debuffs, the last dodge and the last ability cast. Recording
+a run and reading those lines frame by frame is the fastest way to find out why a fight went wrong.
+Everything below runs on the computer the phone is plugged into (USB debugging on).
+
+**Record.** The phone's own `screenrecord` is Permission denied on this ROM, so use
+[scrcpy](https://github.com/Genymobile/scrcpy) (`sudo apt install scrcpy`; 1.25 tested):
+
+```bash
+timeout -s INT 420 scrcpy --no-display --record run.mkv --max-size 1200 --max-fps 30
+```
+
+Start it, then start the run. It stops by itself after 7 minutes; to stop early,
+`pkill -INT -x scrcpy`. Matroska rather than MP4 so an interrupted file is still playable.
+
+**Find the fight.** One frame every 5 seconds, timestamped, on one sheet:
+
+```bash
+ffmpeg -v error -y -i run.mkv -vf "fps=1/5,scale=480:-1,drawtext=text='%{pts\:hms}':x=5:y=h-20:fontsize=16:fontcolor=yellow:box=1:boxcolor=black,tile=4x12" -frames:v 1 overview.png
+```
+
+**Read the debug lines.** Where the overlay sits in the 1200×544 frame varies between
+recordings (the text moved 130 px right between two runs of the same dungeon), so find the rows
+first. This grabs the top of the frame at 2:05, doubled, with a red line every 10 px:
+
+```bash
+ffmpeg -v error -y -ss 125 -i run.mkv -vf "crop=800:110:0:0,scale=1600:-1,drawgrid=w=9999:h=20:color=red@0.6" -frames:v 1 rows.png
+```
+
+Then crop those rows out of a stretch of video. In the last recording the hands were
+`crop=520:14:130:22` and `cast:` was `crop=300:14:130:100`; this shows both for every frame from
+2:01 to 2:06, numbered, so you can count how many frames an item was held:
+
+```bash
+ffmpeg -v error -y -ss 121 -t 5 -i run.mkv -filter_complex "fps=30,split[a][b];[a]crop=520:14:130:22[t];[b]crop=300:14:130:100[c];[t][c]hstack,drawtext=text='%{n}':x=790:y=0:fontsize=12:fontcolor=yellow:box=1:boxcolor=black,tile=2x75" -frames:v 1 strip.png
+```
+
+For a slower overview of the same lines, use `fps=2` and a longer `-t`; your HP is on the bottom
+row of the frame.
+
+Timestamps and frame numbers in a strip count from `-ss`. For a hit itself, `fps=10` on the whole frame shows which
+attack landed: the screen dims on the frame you take damage.

@@ -38,12 +38,51 @@ var curChill = 0
 func Stacks()
   return foe.debuffs.GetCount("debuff_chill")
 
+// Dysangelos P1's arms and eye laser are
+// all state 32; the arms do armDamage.
+var armDamage = 2
+
+func Laser()
+  return foe = dysangelos_bearer & foe.damage > armDamage
+
+// Attacks that share a state but not a
+// timing get lengths of their own.
+func Kind()
+  ?Laser()
+    return ":laser"
+  return ""
+
+// Dysangelos asleep, waking, or between
+// phases: abilities would be wasted. Each
+// phase counts as begun at his first
+// attack (state 2, 32 or 33): the intro
+// passes through states no list caught
+// (126, 118 in a recording). The states
+// below also count as idle afterwards
+// (alexbarker234's script).
+var dysIdle = [-1, 0, 102, 116, 117, 124, 126, 127]
+var dysAttacks = [2, 32, 33]
+var dysActive = ""
+
+func DysIdle()
+  ?string.IndexOf(foe.id, "dysangelos") < 0
+    return false
+  ?dysAttacks.Contains(foe.state)
+    dysActive = foe.id
+  ?!string.Equals(dysActive, foe.id)
+    return true
+  ?dysIdle.Contains(foe.state)
+    return true
+  ?foe = dysangelos_bearer
+    return foe.state = 100 | foe.state = 101
+  return foe = dysangelos_elementalist & foe.state = 107
+
 func Track()
   ?loc.begin | loc.loop
     lenKeys.Clear()
     lens.Clear()
     lenChill.Clear()
-  var sk = foe.id + ":" + foe.state
+  var sk = foe.id + ":" + foe.state + Kind()
   ?string.Equals(sk, curKey)
     curMax = foe.time
     ?Stacks() > curChill
@@ -70,7 +109,7 @@ func At(st, t)
   ?foe.state ! st
     return false
   var from = t + 7 * Stacks()
-  var i = lenKeys.IndexOf(foe.id + ":" + st)
+  var i = lenKeys.IndexOf(foe.id + ":" + st + Kind())
   ?i >= 0
     from = lens[i] - lead + 7 * (Stacks() - lenChill[i])
   ?foe.time = 0
@@ -95,26 +134,71 @@ func Mind()
   info = win + " hand taken"
   return false
 
+// Dysangelos P3's orb (state 115): its
+// beam is warned of by a "!" over the
+// player (Fuzznimp), else is dodged at a
+// fixed frame 70 (livercat, Fuzznimp).
+// Not At(): the beam is the orb's, so
+// neither the cast's length nor chill
+// says when it fires.
+func Warned()
+  var x = screen.FromWorldX(pos.x)
+  var y = screen.FromWorldZ(pos.z - pos.y)
+  return string.Equals(draw.GetSymbol(x + 1, y - 8), "!")
+
+func Orb()
+  ?foe.time = 0
+    win = "s115 orb"
+    info = win
+  ?foe.time >= 25 & Warned()
+    win = "s115 orb !"
+    return Mind()
+  ?foe.time >= 70 & foe.time <= 76
+    win = "s115 orb t70"
+    return Mind()
+  return false
+
 // Returns true if this frame dodges.
+// A boss has been seen in this location.
+// Stays set while a summoned minion is
+// the target, so Travel does not dash at
+// it into the boss.
+var fightOn = false
+// Palas (either stage) has been seen: the
+// Blade summons him, so it never fires
+// in his fight, minions included.
+var palasSeen = false
+
 func Dodge()
+  ?loc.begin | loc.loop
+    fightOn = false
+    palasSeen = false
+    dysActive = ""
   ?foe ! boss
     return false
+  fightOn = true
+  ?foe = skeleton_boss
+    palasSeen = true
   Track()
   var fid = foe.id
   // Dysangelos (Rocky)
   ?fid = dysangelos_bearer
-    // Eye laser; quicker from 11 stars.
+    // Eye laser only, never the arms;
+    // quicker from 11 stars.
+    ?!Laser()
+      return false
     ?loc.stars >= 11 & At(32, 22)
       return Mind()
     ?loc.stars < 11 & At(32, 28)
       return Mind()
     return false
+  // The orb's beam is the only dodge: the
+  // stun slam does 1 damage and stuns
+  // only up close, and the Mind Stone
+  // must be off cooldown for the beam.
   ?fid = dysangelos_perfected
-    ?At(115, 60)
-      return Mind()
-    // Stun slam: the 32 that does 1 damage.
-    ?foe.damage <= 1 & At(32, 58)
-      return Mind()
+    ?foe.state = 115
+      return Orb()
     return false
   // Xyloalgia (Deadwood). Poena has no
   // dodge here; Debuff stops feeding her
