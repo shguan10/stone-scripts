@@ -77,6 +77,20 @@ gear.Apply()
   >`0,1,L @item.left@
   >`0,10,R @item.right@
   >`0,5,cast: @gear.last@
+  // How item.GetCount treats a star level:
+  // the Ouroboros is 1-star, the Poison
+  // wands 0- and 9-star (recorded).
+  var o1
+  var o10
+  var p0
+  var p9
+  var p10
+  o1 = item.GetCount("ouroboros *1")
+  o10 = item.GetCount("ouroboros *10")
+  p0 = item.GetCount("poison wand dp *0")
+  p9 = item.GetCount("poison wand dp *9")
+  p10 = item.GetCount("poison wand dp *10")
+  >`0,11,stars: o1 @o1@ o10 @o10@ p0 @p0@ p9 @p9@ p10 @p10@
   // How many items each shield search
   // matches: names are cut off on screen.
   var nDash
