@@ -42,13 +42,14 @@ func Abilities()
   // plain "poison wand" is not it.
   ?Tough() & debuff.Needs("debuff_damage")
     gear.Cast("wand_poison", "wand_hidden_poison", "L")
-  // Explosive Wand, on bosses that stand
-  // on the ground: it does not touch the
-  // floating Dysangelos, nor the Mushroom
-  // bosses (Shane).
-  ?Tough() & string.IndexOf(foe.id, "dysangelos") < 0 &
-  ^foe ! mushroom_boss
-    gear.Cast("wand_fire", "wand_hidden_fire", "L")
+  // Explosive Wand: its active is off on
+  // every boss (Shane); it is still held
+  // as a burn debuff wand. It never touched
+  // the floating Dysangelos nor the
+  // Mushroom bosses.
+  //?Tough() & string.IndexOf(foe.id, "dysangelos") < 0 &
+  //^foe ! mushroom_boss
+  //  gear.Cast("wand_fire", "wand_hidden_fire", "L")
   // Feeble, on bosses only. Nagaraja
   // cannot be masked. No range limit:
   // wands fight from beyond melee range.
