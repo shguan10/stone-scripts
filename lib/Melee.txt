@@ -124,7 +124,7 @@ func Wield()
   ?foe.id ! poena
     r = debuff.Weapon(mainEl)
   ?!r
-    r = Crit(element.Best(), "tower")
+    r = Crit(element.Best(), "shield -dashing -bashing")
     ?!gear.Has(r)
       r = "tower"
     ?!gear.Has(r)

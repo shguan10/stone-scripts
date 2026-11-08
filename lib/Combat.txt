@@ -152,26 +152,30 @@ func Ranged()
         wandEl = "vigor"
   ?wand
     gear.L(wand)
-  // Against a boss the shield only builds
-  // armor, which stays when it is put away:
-  // once near the cap, a debuff wand.
-  ?Tough() & ArmorFull()
+  // The shield only builds armor, which
+  // stays when it is put away: once near
+  // the cap, a debuff wand, in every fight
+  // (Shane).
+  ?ArmorFull()
     c = debuff.Wand(wandEl)
     ?string.Size(c) = 0
       c = debuff.AnyWand(wandEl)
     ?string.Size(c) > 0
       gear.R(c)
       return
-  // The Towering Shield at least: a plain
-  // shield never goes on in a fight, not
-  // even a counter-element one (Shane). A
-  // counter-element tower, if owned. The
-  // dashing ones would dash in on their
-  // own; a plain shield only without any
-  // tower.
+  // A counter-element shield first (Shane:
+  // poison beats the tower in the Mushroom
+  // Forest), a tower of that element ahead
+  // of a plain one; else the Towering
+  // Shield. The plain Stone shield never
+  // goes on in a fight while a tower is
+  // owned. The dashing ones would dash in
+  // on their own.
   var shield = tower
   ?el
     c = el + " " + tower
+    ?!gear.Has(c)
+      c = el + " shield -dashing -bashing"
     ?gear.Has(c)
       shield = c
   ?!gear.Has(shield)
