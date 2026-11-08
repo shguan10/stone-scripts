@@ -206,8 +206,11 @@ func Run()
   ^foe.distance > wandRange
     wandRange = foe.distance
   var dys3 = foe = dysangelos_perfected & !bosses.DysIdle()
-  ?dys3
-    melee.Dys3Heavy()
+  // The Heavy Hammer on armor: Dysangelos
+  // P3, and the Mushroom bosses (Shane;
+  // Morel had 185, recorded).
+  ?dys3 | foe = mushroom_boss
+    melee.Heavy()
   Abilities()
   // A boss out of wand range is walked to
   // only until it is first hit. After

@@ -147,15 +147,16 @@ func DashIn()
     ?gear.Has("dashing shield")
       gear.R("dashing shield")
 
-// Dysangelos P3's armor, the one melee
-// while melee is off elsewhere. The Heavy
+// Boss armor (Dysangelos P3, the
+// Mushroom bosses): the one melee while
+// melee is off elsewhere. The Heavy
 // Hammer's ability (2x armor damage and
 // Armor Fatigue, per the wiki) whenever
 // he has armor in its reach.
 var heavies = ["heavy hammer", "heavy_hammer"]
 var heavyReach = 7
 
-func Dys3Heavy()
+func Heavy()
   ?foe.armor <= 0 | foe.distance > heavyReach
     return false
   var h = gear.First(heavies)
