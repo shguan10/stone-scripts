@@ -71,8 +71,12 @@ func Track()
   var sk = foe.id + ":" + foe.state
   ?string.Equals(sk, curKey)
     curMax = foe.time
-    ?Stacks() > curChill
-      curChill = Stacks()
+    // The stacks at the state's end, not
+    // the most seen: chill decays during a
+    // long wind-up, and the max (4, ending
+    // at 1) made the next dodge ~21 frames
+    // early (recorded, Palas).
+    curChill = Stacks()
     return
   // The state just ended: keep its length.
   ?curMax > 0
@@ -230,9 +234,11 @@ func Dodge()
       return Mind()
     return false
   // Phase 1's blade slam winds up 125
-  // frames at 3 stars, 90 at 4, 70 at 5+.
+  // frames at 3 stars, 90 at 4, 70 at 5+
+  // (recorded ~70 unchilled at 5+, the hit
+  // at 33 t2): 66 is that less the lead.
   ?fid = skeleton_boss
-    var slam = 68
+    var slam = 66
     ?loc.stars <= 3
       slam = 123
     :?loc.stars = 4
