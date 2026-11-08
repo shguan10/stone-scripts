@@ -38,12 +38,40 @@ var curChill = 0
 func Stacks()
   return foe.debuffs.GetCount("debuff_chill")
 
+// Dysangelos P1's arms and eye laser are
+// all state 32; the arms do armDamage.
+var armDamage = 2
+
+func Laser()
+  return foe = dysangelos_bearer & foe.damage > armDamage
+
+// Attacks that share a state but not a
+// timing get lengths of their own.
+func Kind()
+  ?Laser()
+    return ":laser"
+  return ""
+
+// Dysangelos asleep, waking, or between
+// phases: abilities would be wasted.
+// States from alexbarker234's script.
+var dysIdle = [-1, 0, 102, 116, 117, 124, 127]
+
+func DysIdle()
+  ?string.IndexOf(foe.id, "dysangelos") < 0
+    return false
+  ?dysIdle.Contains(foe.state)
+    return true
+  ?foe = dysangelos_bearer
+    return foe.state = 100 | foe.state = 101
+  return foe = dysangelos_elementalist & foe.state = 107
+
 func Track()
   ?loc.begin | loc.loop
     lenKeys.Clear()
     lens.Clear()
     lenChill.Clear()
-  var sk = foe.id + ":" + foe.state
+  var sk = foe.id + ":" + foe.state + Kind()
   ?string.Equals(sk, curKey)
     curMax = foe.time
     ?Stacks() > curChill
@@ -70,7 +98,7 @@ func At(st, t)
   ?foe.state ! st
     return false
   var from = t + 7 * Stacks()
-  var i = lenKeys.IndexOf(foe.id + ":" + st)
+  var i = lenKeys.IndexOf(foe.id + ":" + st + Kind())
   ?i >= 0
     from = lens[i] - lead + 7 * (Stacks() - lenChill[i])
   ?foe.time = 0
@@ -143,7 +171,10 @@ func Dodge()
   var fid = foe.id
   // Dysangelos (Rocky)
   ?fid = dysangelos_bearer
-    // Eye laser; quicker from 11 stars.
+    // Eye laser only, never the arms;
+    // quicker from 11 stars.
+    ?!Laser()
+      return false
     ?loc.stars >= 11 & At(32, 22)
       return Mind()
     ?loc.stars < 11 & At(32, 28)

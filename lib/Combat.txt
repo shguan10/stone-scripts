@@ -21,7 +21,7 @@ var tower = "towering shield"
 var towerArmor = 6
 
 func Abilities()
-  ?foe.distance > 20
+  ?foe.distance > 20 | bosses.DysIdle()
     return
   // Plague Wand: weaken, if not on yet.
   ?foe = boss & debuff.Needs("debuff_damage")
