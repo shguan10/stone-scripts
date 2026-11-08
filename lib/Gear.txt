@@ -209,11 +209,21 @@ func Hold()
   // would keep coming back.
   ?since > 30
     return false
+  // Only while the cast item is still in
+  // its hand: once anything else is
+  // equipped, its own wind-up is state 2
+  // too, and the cast item was pulled back
+  // every other swap for the rest of the
+  // 30 frames (mask / wand flicker,
+  // recorded).
   var st = item.right.state
+  var held = item.right = castCrit
   ?castHand = "L"
     st = item.left.state
-  ?st = 2
+    held = item.left = castCrit
+  ?held & st = 2
     return Take(castHand, castCrit)
+  castAt = -999
   return false
 
 // Star levels. item.GetCount ignores a
