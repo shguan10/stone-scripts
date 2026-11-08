@@ -263,6 +263,12 @@ func Run()
   ?foe = mushroom_boss_fat
     melee.Run()
     return
+  // Melee closes in its own way (hammer in
+  // hand, DashIn's shields), so before the
+  // ranged rule below.
+  ?dys3
+    ?melee.Dys3Hammer(ArmorFull())
+      return
   // Out of wand range, walking with a wand
   // in hand wastes time (Shane): close in
   // with the Quarterstaff's mini-dash and
@@ -273,9 +279,6 @@ func Run()
   ?foe.distance > wandRange
     travel.Close()
     return
-  ?dys3
-    ?melee.Dys3Hammer(ArmorFull())
-      return
   Ranged()
   // Crossbows, for when they come back:
   //?foe = boss
