@@ -279,16 +279,18 @@ func Dodge()
   // frames at 3 stars, 90 at 4, 70 at 5+
   // (recorded ~70 unchilled at 5+, the hit
   // at 33 t2): 66 is that less the lead.
-  // Light blue (6+): it lands at ~84-85
-  // (four recordings, chill 0-5), once at
-  // 104 (chill 5, or it held until the
-  // player walked back in; unresolved). A
-  // t66 dodge left time to walk back into
-  // it, so a fixed t76 for every slam: the
-  // learned length only drifted.
+  // Light blue (6+): with no dodge it
+  // landed at ~85; after a t66 or t76
+  // backflip it wound up to ~104 at chill
+  // 5 and landed just as the walk back
+  // reached d21-22 (four recordings, hit
+  // 7-11 each). Chill or waiting for the
+  // player, unresolved; either way the hit
+  // lands 2-4 frames into state 33, so the
+  // dodge is on 33's first frames.
   ?fid = skeleton_boss
     ?loc.stars >= 6
-      ?AtFixed(32, 76)
+      ?AtFixed(33, 0) & foe.time <= 1
         return Mind()
       return false
     var slam = 66
