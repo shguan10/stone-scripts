@@ -17,8 +17,22 @@ var bosses = import lib/Bosses
 
 var arms = ["skeleton arm", "skeleton_arm"]
 var fallbackWands = ["vigor wand", "wand"]
-var tower = "towering shield"
-var towerArmor = 6
+var tower = "tower"
+var lifesteal = "vigor wand dl"
+
+// Fought like a boss: the Rocky Plateau's
+// Acronian Scout hits for 8-10 every 3 s
+// and killed a player on plain-foe gear
+// (recorded). Mask and poison both cut
+// its damage.
+func Tough()
+  return foe = boss | Scout()
+
+// The Scout is boss-tagged (the debug
+// dodge row shows for it); matched by id
+// string, in case a search filter misses.
+func Scout()
+  return string.Equals(foe.id, "acronian_scout")
 
 func Abilities()
   ?foe.distance > 20 | bosses.DysIdle()
@@ -26,15 +40,19 @@ func Abilities()
   // Plague Wand: weaken, if not on yet.
   // The hidden wands are found by id: a
   // plain "poison wand" is not it.
-  ?foe = boss & debuff.Needs("debuff_damage")
+  ?Tough() & debuff.Needs("debuff_damage")
     gear.Cast("wand_poison", "wand_hidden_poison", "L")
-  // Explosive Wand, on bosses.
-  ?foe = boss
+  // Explosive Wand, on bosses that stand
+  // on the ground: it does not touch the
+  // floating Dysangelos, nor the Mushroom
+  // bosses (Shane).
+  ?Tough() & string.IndexOf(foe.id, "dysangelos") < 0 &
+  ^foe ! mushroom_boss
     gear.Cast("wand_fire", "wand_hidden_fire", "L")
   // Feeble, on bosses only. Nagaraja
   // cannot be masked. No range limit:
   // wands fight from beyond melee range.
-  ?foe = boss & foe ! nagaraja
+  ?Tough() & foe ! nagaraja
     gear.Cast("mask", "mask", "R")
   // Skeleton Arm: whenever off cooldown,
   // at any range; whether it can fire is
@@ -55,13 +73,38 @@ func Abilities()
 // while a shield is in hand (it depends
 // on the shield). High until then, so the
 // first shield goes on.
+//
+// Full from capGap below the cap until
+// it falls capDrop below: armor drains
+// slowly without a shield, and a single
+// threshold swapped shield and wand every
+// frame or two at 5.9/6.0 (recorded).
 var armorCap = 99
 var capGap = 1
+var capDrop = 2
+// Dysangelos P2's attacks knock armor
+// past capDrop so often that the wands
+// rarely came out (Shane), and with the
+// tower (cap 14) armor levels off at
+// 11-12 under them (recorded), short of
+// capGap.
+var dysP2Gap = 4
+var dysP2Drop = 8
+var armorUp = false
 
 func ArmorFull()
   ?item.right = shield
     armorCap = maxarmor
-  return armor >= armorCap - capGap
+  var gap = capGap
+  var drop = capDrop
+  ?foe = dysangelos_elementalist
+    gap = dysP2Gap
+    drop = dysP2Drop
+  ?armor >= armorCap - gap
+    armorUp = true
+  :?armor < armorCap - drop
+    armorUp = false
+  return armorUp
 
 // The counter wand does the damage. Once
 // armor is near its cap, a boss gets a
@@ -87,38 +130,56 @@ func Ranged()
     wand = gear.First(fallbackWands)
     ?string.IndexOf(wand, "vigor") = 0
       wandEl = "vigor"
+  // Dysangelos P1 and P3 and the Scout,
+  // the left hand (Shane): at full HP, any missing
+  // debuff; below it, the lifesteal vigor
+  // wand, swapped only for poison when he
+  // is not poisoned. P3 keeps the wand of
+  // an element he does not resist when he
+  // resists vigor.
+  ?foe = dysangelos_bearer | foe = dysangelos_perfected | Scout()
+    c = ""
+    ?hp >= maxhp
+      c = debuff.Wand("")
+    :?debuff.Needs("debuff_damage") &
+    ^gear.Has("poison wand dp")
+      c = "poison wand dp"
+    :?foe.buffs.string ! adaptive_defense_vigor &
+    ^gear.Has(lifesteal)
+      c = lifesteal
+    ?string.Size(c) > 0
+      wand = c
+      wandEl = debuff.El(c)
+      ?string.Equals(c, lifesteal)
+        wandEl = "vigor"
   ?wand
     gear.L(wand)
-  // Dysangelos P2: the Towering Shield
-  // until armor is back to towerArmor,
-  // then the debuffs again.
-  ?foe = dysangelos_elementalist &
-  ^armor < towerArmor & gear.Has(tower)
-    gear.R(tower)
-    return
-  // Against a boss the shield only builds
-  // armor, which stays when it is put away:
-  // once near the cap, a debuff wand.
-  ?foe = boss & ArmorFull()
+  // The shield only builds armor, which
+  // stays when it is put away: once near
+  // the cap, a debuff wand, in every fight
+  // (Shane).
+  ?ArmorFull()
     c = debuff.Wand(wandEl)
     ?string.Size(c) = 0
       c = debuff.AnyWand(wandEl)
     ?string.Size(c) > 0
       gear.R(c)
       return
-  // Plain shield: the dashing ones would
-  // dash in on their own.
-  var shield = "shield -dashing -bashing"
+  // A counter-element shield first (Shane:
+  // poison beats the tower in the Mushroom
+  // Forest; the tower has no element
+  // versions); else the Towering Shield.
+  // The plain Stone shield never goes on
+  // in a fight while a tower is owned. The
+  // dashing ones would dash in on their
+  // own.
+  var shield = tower
   ?el
     c = el + " shield -dashing -bashing"
     ?gear.Has(c)
       shield = c
-  // Dysangelos P1 and P2: the Towering
-  // Shield.
-  ?(foe = dysangelos_bearer |
-  ^foe = dysangelos_elementalist) &
-  ^gear.Has(tower)
-    shield = tower
+  ?!gear.Has(shield)
+    shield = "shield -dashing -bashing"
   gear.R(shield)
 
 // Two-handed, so both hands or nothing,
@@ -147,9 +208,18 @@ func Run()
   ^foe.distance > wandRange
     wandRange = foe.distance
   var dys3 = foe = dysangelos_perfected & !bosses.DysIdle()
-  ?dys3
-    melee.Dys3Heavy()
+  // The Heavy Hammer on armor: Dysangelos
+  // P3, and the Mushroom bosses (Shane;
+  // Morel had 185, recorded).
+  ?dys3 | foe = mushroom_boss
+    melee.Heavy()
   Abilities()
+  // Morel (the Mushroom Forest's second
+  // phase) is rushed and meleed; Bosses
+  // still dodges the big punch (Shane).
+  ?foe = mushroom_boss_fat
+    melee.Run()
+    return
   // A boss out of wand range is walked to
   // only until it is first hit. After
   // that the gap is usually a backflip,
@@ -158,10 +228,10 @@ func Run()
   // dash: it lands in melee range.
   ?foe = boss & foe.distance > wandRange &
   ^foe.hp = foe.maxhp
-    travel.Walk()
+    travel.Approach()
     return
   ?dys3
-    ?melee.Dys3Hammer()
+    ?melee.Dys3Hammer(ArmorFull())
       return
   Ranged()
   // Crossbows, for when they come back:

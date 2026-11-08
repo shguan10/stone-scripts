@@ -38,20 +38,6 @@ var curChill = 0
 func Stacks()
   return foe.debuffs.GetCount("debuff_chill")
 
-// Dysangelos P1's arms and eye laser are
-// all state 32; the arms do armDamage.
-var armDamage = 2
-
-func Laser()
-  return foe = dysangelos_bearer & foe.damage > armDamage
-
-// Attacks that share a state but not a
-// timing get lengths of their own.
-func Kind()
-  ?Laser()
-    return ":laser"
-  return ""
-
 // Dysangelos asleep, waking, or between
 // phases: abilities would be wasted. Each
 // phase counts as begun at his first
@@ -82,7 +68,7 @@ func Track()
     lenKeys.Clear()
     lens.Clear()
     lenChill.Clear()
-  var sk = foe.id + ":" + foe.state + Kind()
+  var sk = foe.id + ":" + foe.state
   ?string.Equals(sk, curKey)
     curMax = foe.time
     ?Stacks() > curChill
@@ -109,7 +95,7 @@ func At(st, t)
   ?foe.state ! st
     return false
   var from = t + 7 * Stacks()
-  var i = lenKeys.IndexOf(foe.id + ":" + st + Kind())
+  var i = lenKeys.IndexOf(foe.id + ":" + st)
   ?i >= 0
     from = lens[i] - lead + 7 * (Stacks() - lenChill[i])
   ?foe.time = 0
@@ -181,16 +167,12 @@ func Dodge()
     palasSeen = true
   Track()
   var fid = foe.id
-  // Dysangelos (Rocky)
+  // Dysangelos (Rocky) P1: nothing. His
+  // eye laser (every 6th attack, landing
+  // at 33 t24) cannot be dodged (Shane),
+  // and the arms are not worth the Mind
+  // Stone.
   ?fid = dysangelos_bearer
-    // Eye laser only, never the arms;
-    // quicker from 11 stars.
-    ?!Laser()
-      return false
-    ?loc.stars >= 11 & At(32, 22)
-      return Mind()
-    ?loc.stars < 11 & At(32, 28)
-      return Mind()
     return false
   // The orb's beam is the only dodge: the
   // stun slam does 1 damage and stuns
@@ -215,8 +197,11 @@ func Dodge()
   // Angry Shroom (Mushroom): the punch.
   // Morel first: its id contains the
   // other's.
+  // Morel's 32 lasts 22 frames unchilled
+  // (recorded), so the community 26 never
+  // came: 22 less the lead.
   ?fid = mushroom_boss_fat
-    ?At(32, 26)
+    ?At(32, 18)
       return Mind()
     return false
   ?fid = mushroom_boss

@@ -216,14 +216,113 @@ func Hold()
     return Take(castHand, castCrit)
   return false
 
+// Star levels. item.GetCount ignores a
+// star term (it counted a 1-star item at
+// *10), and equip picks what best fits,
+// which was a 0-star Poison wand over the
+// 9-star (recorded). So each criteria in
+// starCrits is tried in the left hand at
+// a location's start, *10 down to *0, one
+// try every probeGap frames, and the
+// first star the hand really holds is
+// kept. Apply then equips that star. No
+// star found: the plain criteria.
+var starCrits = ["poison wand dp", "fire wand df", "ice wand di", "vigor wand dl", "fire wand", "ice wand", "aether wand", "poison wand", "vigor wand", "fire hammer -heavy", "vigor hammer -heavy"]
+// Each one's name alone, for checking the
+// hand: comparing it with a rune tag (dp)
+// never matched, though equip honours it
+// (recorded).
+var starBases = ["poison wand", "fire wand", "ice wand", "vigor wand", "fire wand", "ice wand", "aether wand", "poison wand", "vigor wand", "fire hammer", "vigor hammer"]
+var topStar = 10
+var probeGap = 2
+var probing = true
+var probeI = 0
+var probeN = 10
+var probeAt = -999
+var resKeys = []
+var resVals = []
+// For debug: what the probe found.
+var found = ""
+
+func StartProbe()
+  resKeys.Clear()
+  resVals.Clear()
+  found = ""
+  probing = true
+  probeI = 0
+  probeN = topStar
+  probeAt = -999
+
+// Moves to the next owned criteria, at
+// the top star.
+func NextCrit()
+  probeI++
+  probeN = topStar
+  probeAt = -999
+  ?probeI < starCrits.Count()
+    ?!Has(starCrits[probeI])
+      NextCrit()
+
+// The left hand holds base at star n.
+func HoldsStar(base, n)
+  ?item.left ! base
+    return false
+  var h = "" + item.left
+  return string.IndexOf(h, "*" + n + "*") >= 0
+
+// Claims the left hand while probing.
+// Returns true while it does.
+func Probe()
+  ?loc.begin | loc.loop
+    StartProbe()
+  ?!probing
+    return false
+  ?probeI = 0 & probeAt < 0 & !Has(starCrits[0])
+    NextCrit()
+  ?probeI >= starCrits.Count()
+    probing = false
+    return false
+  var crit = starCrits[probeI]
+  ?probeAt >= 0 & totaltime - probeAt >= probeGap
+    last = "probe " + crit + " *" + probeN + " held " + item.left
+    ?HoldsStar(starBases[probeI], probeN)
+      resKeys.Add(crit)
+      resVals.Add(crit + " *" + probeN)
+      found = found + crit + " *" + probeN + ", "
+      NextCrit()
+    :?probeN <= 0
+      found = found + crit + " none, "
+      NextCrit()
+    :
+      probeN--
+      probeAt = -999
+    ?probeI >= starCrits.Count()
+      probing = false
+      return false
+    crit = starCrits[probeI]
+  ?probeAt < 0
+    probeAt = totaltime
+  return Take("L", crit + " *" + probeN)
+
+// crit at the star the probe found.
+func Star(crit)
+  var i = resKeys.IndexOf(crit)
+  ?i < 0
+    return crit
+  return resVals[i]
+
 func Apply()
+  var e = ""
   ?toB
-    equip @toB@
+    e = Star(toB)
+    equip @e@
   :
     ?toL
-      equipL @toL@
+      e = Star(toL)
+      equipL @e@
     ?toR
-      equipR @toR@
+      e = Star(toR)
+      equipR @e@
   ?actL
     activate L
   ?actR

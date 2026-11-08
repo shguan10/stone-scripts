@@ -12,6 +12,12 @@ var combat = import lib/Combat
 // top-left, for calibrating lib/Bosses.
 var debug = true
 
+// When this location began, for the
+// start-of-location tower.
+var locStart = -999
+var startFrames = 2
+var dysEls = ["fire", "ice", "aether", "vigor", "poison"]
+
 // Dysangelos's talk, auto-skipped. He is
 // the only one who talks in the Rocky
 // Plateau.
@@ -39,10 +45,24 @@ safe = !foe | (foe.distance>20 & foe ! boss)
 // walk the player into the boss.
 ?bosses.fightOn & foe
   safe = false
+// Dysangelos before his first attack, and
+// between phases, walks safely (Shane):
+// the intro holds him in state 100 for
+// seconds (recorded).
+?bosses.DysIdle()
+  safe = true
 
 // Highest priority first: each hand goes
 // to the first module that asks for it.
 gear.Reset()
+// The Towering Shield in hand on a
+// location's first frames starts it at
+// full armor (Shane).
+?loc.begin | loc.loop
+  locStart = totaltime
+?totaltime - locStart <= startFrames
+  gear.R(combat.tower)
+gear.Probe()
 bosses.Dodge()
 gear.Hold()
 ?safe
@@ -53,8 +73,24 @@ gear.Hold()
 gear.Apply()
 
 ?debug
-  >`0,1,L @item.left@ / R @item.right@
+  // Each hand on its own row: one line for
+  // both cut the right hand's id off.
+  >`0,1,L @item.left@
+  >`0,10,R @item.right@
   >`0,5,cast: @gear.last@
+  // The star levels Gear's probe found.
+  >`0,11,stars v3: @gear.found@
+  // How many items each shield search
+  // matches: names are cut off on screen.
+  var nDash
+  var nBash
+  var nPlain
+  var nTower
+  nDash = item.GetCount("dashing shield")
+  nBash = item.GetCount("bashing shield")
+  nPlain = item.GetCount("shield -dashing -bashing -tower")
+  nTower = item.GetCount("tower")
+  >`0,9,dash @nDash@ bash @nBash@ plain @nPlain@ tower @nTower@
 ?debug & foe
   >`0,2,@foe.id@ s@foe.state@ t@foe.time@
   ?foe.debuffs.count > 0
@@ -63,9 +99,24 @@ gear.Apply()
     >`0,4,dodge: @bosses.info@
     >`0,7,buffs: @foe.buffs.string@ cap: @combat.armorCap@
   // Whether the Towering Shield is found.
-  ?foe = dysangelos_elementalist
-    var towers = item.GetCount(combat.tower)
+  ?foe = dysangelos
+    // A var's initializer runs only once
+    // here, so assign on its own line.
+    var towers
+    towers = item.GetCount(combat.tower)
     >`0,6,tower: @towers@ armor: @armor@
+  // Dysangelos P3's absorbed elements, by
+  // name, with frames left: the HUD shows
+  // them with the debuffs' symbols.
+  ?foe = dysangelos_perfected
+    var res
+    var left
+    res = ""
+    for el : dysEls
+      left = foe.buffs.GetTime("adaptive_defense_" + el)
+      ?left > 0
+        res = res + el + " " + left + "  "
+    >`0,8,resists: @res@
 
 //?foe=boss & foe.hp<foe.maxhp
   //activate potion
