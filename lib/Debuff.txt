@@ -104,9 +104,16 @@ func InHand()
 // chill gone (recorded). Debuffs last
 // after the wand leaves: burn ~11 s,
 // poison and chill ~3 s (recorded).
+// A wand's first hit lands 0.6-0.9 s
+// after the swap, then one every ~0.55 s
+// (recorded vs Palas). Wand() already
+// keeps a wand while its debuff is
+// missing, so the hold only delayed the
+// next one: at 60 poison stayed 1.2 s
+// after landing (Shane: too long). Off.
 var lastH = -1
 var heldAt = 0
-var minHold = 60
+var minHold = 0
 
 // InHand, noting when it changed.
 func Held()
