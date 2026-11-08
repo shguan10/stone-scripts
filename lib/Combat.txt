@@ -140,6 +140,9 @@ func Run()
   ?item.left = wand & item.left.state = 2 &
   ^foe.distance > wandRange
     wandRange = foe.distance
+  var dys3 = foe = dysangelos_perfected & !bosses.DysIdle()
+  ?dys3
+    melee.Dys3Heavy()
   Abilities()
   // A boss out of wand range is walked to
   // only until it is first hit. After
@@ -151,6 +154,9 @@ func Run()
   ^foe.hp = foe.maxhp
     travel.Walk()
     return
+  ?dys3
+    ?melee.Dys3Hammer()
+      return
   Ranged()
   // Crossbows, for when they come back:
   //?foe = boss
