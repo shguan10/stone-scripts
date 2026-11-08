@@ -115,13 +115,21 @@ func Ranged()
       wandEl = "vigor"
   // Dysangelos P1: his arms keep armor far
   // from the cap, so the right hand stays
-  // on the tower; the left poisons him
-  // whenever he is not (Shane).
-  ?foe = dysangelos_bearer &
-  ^debuff.Needs("debuff_damage") &
-  ^gear.Has("poison wand dp")
-    wand = "poison wand dp"
-    wandEl = "poison"
+  // on the tower and the left debuffs. At
+  // full HP, any missing debuff; below it,
+  // the lifesteal vigor wand, swapped only
+  // for poison when he is not poisoned
+  // (Shane).
+  ?foe = dysangelos_bearer
+    c = ""
+    ?hp >= maxhp
+      c = debuff.Wand("")
+    :?debuff.Needs("debuff_damage") &
+    ^gear.Has("poison wand dp")
+      c = "poison wand dp"
+    ?string.Size(c) > 0
+      wand = c
+      wandEl = debuff.El(c)
   ?wand
     gear.L(wand)
   // Against a boss the shield only builds
