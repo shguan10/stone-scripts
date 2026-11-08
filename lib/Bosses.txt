@@ -154,15 +154,30 @@ var fightOn = false
 // Blade summons him, so it never fires
 // in his fight, minions included.
 var palasSeen = false
+// The last boss-tagged foe's id, for the
+// gaps between boss phases.
+var lastBoss = ""
+
+// Between the Mushroom Forest's phases:
+// the Shroom or Morel was the last boss
+// and has gone (Ekki is the last phase;
+// the minibosses are boss-tagged too).
+func ShroomGap()
+  ?foe
+    return false
+  return string.Equals(lastBoss, "mushroom_boss") |
+  ^string.Equals(lastBoss, "mushroom_boss_fat")
 
 func Dodge()
   ?loc.begin | loc.loop
     fightOn = false
     palasSeen = false
+    lastBoss = ""
     dysActive = ""
   ?foe ! boss
     return false
   fightOn = true
+  lastBoss = foe.id
   ?foe = skeleton_boss
     palasSeen = true
   Track()

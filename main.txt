@@ -70,7 +70,7 @@ gear.Hold()
 // splitting into Morel) nothing is
 // targeted: the counter shield, not the
 // walking stones (Shane).
-?safe & bosses.fightOn & !foe
+?safe & bosses.ShroomGap()
   gear.R(combat.Shield(element.Best()))
 ?safe
   harv.Run()
