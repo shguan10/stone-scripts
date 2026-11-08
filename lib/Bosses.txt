@@ -118,15 +118,6 @@ func AtFixed(st, t)
     info = win
   return foe.time >= from & foe.time <= from + 6
 
-// The Shroom's punch wind-up (32) and
-// spore pellets (33, Fuzznimp blocks
-// them) without a dodge: the tower takes
-// them, not a debuff wand.
-func ShroomBlock()
-  ?foe.state = 32 | foe.state = 33
-    ?gear.Has("tower")
-      gear.R("tower")
-
 func Mind()
   ?item.GetCooldown("mind") > 0
     // Already used on this attack?
@@ -224,12 +215,10 @@ func Dodge()
   ?fid = mushroom_boss_fat
     ?AtFixed(32, 26) & Mind()
       return true
-    ShroomBlock()
     return false
   ?fid = mushroom_boss
     ?AtFixed(32, 46) & Mind()
       return true
-    ShroomBlock()
     return false
   // Pallas (Halls): phase 2 first, for
   // the same reason.
