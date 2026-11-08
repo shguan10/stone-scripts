@@ -92,17 +92,36 @@ func InHand()
     i++
   return -1
 
+// When the debuff wand in hand was put
+// there. Each one applies its debuff in
+// about a second, so without a minimum
+// the hand rotated poison, fire, ice and
+// barely attacked (recorded).
+var lastH = -1
+var heldAt = 0
+var minHold = 60
+
+// InHand, noting when it changed.
+func Held()
+  var h = InHand()
+  ?h ! lastH
+    lastH = h
+    heldAt = totaltime
+  return h
+
 // Wands only, for ranged fights. Skips
 // element skipEl, as Weapon does. The one
 // in hand stays while its debuff is still
-// missing: every swap restarts a wand's
-// attack.
+// missing, and for minHold frames anyway:
+// every swap restarts a wand's attack.
 func Wand(skipEl)
-  var h = InHand()
+  var h = Held()
   ?h >= 0
-    ?Needs(wandIds[h]) &
-    ^!string.Equals(skipEl, wandEls[h])
-      return wands[h]
+    ?!string.Equals(skipEl, wandEls[h])
+      ?Needs(wandIds[h])
+        return wands[h]
+      ?totaltime - heldAt < minHold
+        return wands[h]
   ?Needs("debuff_damage") &
   ^!string.Equals(skipEl, "poison") &
   ^gear.Has("poison wand dp")
@@ -122,7 +141,7 @@ func Wand(skipEl)
 // hand, else fire, poison, ice. Skips
 // element skipEl.
 func AnyWand(skipEl)
-  var h = InHand()
+  var h = Held()
   ?h >= 0
     ?!string.Equals(skipEl, wandEls[h])
       return wands[h]
