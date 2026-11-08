@@ -247,6 +247,21 @@ func Crossbow(el)
 // out for the walk to Palas (recorded).
 var wandRange = 20
 
+// Palas P1's slam is winding up (32) or
+// just landing (33, hit at t2-7). The
+// backflip lands out of wand range, and
+// the stones walked straight back in and
+// took the hit (d31 -> d20 in ~0.6 s,
+// recorded); wands walk in slower.
+func PalasSlam()
+  ?foe ! skeleton_boss | foe = skeleton_boss_stage_2
+    return false
+  ?foe.state = 32
+    return true
+  ?foe.state = 33
+    return foe.time < 10
+  return false
+
 func Run()
   var dys3 = foe = dysangelos_perfected & !bosses.DysIdle()
   // The Heavy Hammer on armor: Dysangelos
@@ -275,7 +290,7 @@ func Run()
   // Dashing or Bashing shield: both end in
   // melee range, where minions hit too
   // (Shane).
-  ?foe.distance > wandRange
+  ?foe.distance > wandRange & !PalasSlam()
     travel.Close()
     return
   Ranged()
