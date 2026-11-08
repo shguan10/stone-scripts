@@ -40,6 +40,12 @@ safe = !foe | (foe.distance>20 & foe ! boss)
 // walk the player into the boss.
 ?bosses.fightOn & foe
   safe = false
+// Dysangelos before his first attack, and
+// between phases, walks safely (Shane):
+// the intro holds him in state 100 for
+// seconds (recorded).
+?bosses.DysIdle()
+  safe = true
 
 // Highest priority first: each hand goes
 // to the first module that asks for it.
