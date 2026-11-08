@@ -20,23 +20,31 @@ var fallbackWands = ["vigor wand", "wand"]
 var tower = "tower"
 var lifesteal = "vigor wand dl"
 
+// Fought like a boss: the Rocky Plateau's
+// Acronian Scout hits for 8-10 every 3 s
+// and killed a player on plain-foe gear
+// (recorded). Mask and poison both cut
+// its damage.
+func Tough()
+  return foe = boss | foe = acronian_scout
+
 func Abilities()
   ?foe.distance > 20 | bosses.DysIdle()
     return
   // Plague Wand: weaken, if not on yet.
   // The hidden wands are found by id: a
   // plain "poison wand" is not it.
-  ?foe = boss & debuff.Needs("debuff_damage")
+  ?Tough() & debuff.Needs("debuff_damage")
     gear.Cast("wand_poison", "wand_hidden_poison", "L")
   // Explosive Wand, on bosses that stand
   // on the ground: it does not touch the
   // floating Dysangelos (Shane).
-  ?foe = boss & string.IndexOf(foe.id, "dysangelos") < 0
+  ?Tough() & string.IndexOf(foe.id, "dysangelos") < 0
     gear.Cast("wand_fire", "wand_hidden_fire", "L")
   // Feeble, on bosses only. Nagaraja
   // cannot be masked. No range limit:
   // wands fight from beyond melee range.
-  ?foe = boss & foe ! nagaraja
+  ?Tough() & foe ! nagaraja
     gear.Cast("mask", "mask", "R")
   // Skeleton Arm: whenever off cooldown,
   // at any range; whether it can fire is
@@ -114,14 +122,15 @@ func Ranged()
     wand = gear.First(fallbackWands)
     ?string.IndexOf(wand, "vigor") = 0
       wandEl = "vigor"
-  // Dysangelos P1 and P3, the left hand
-  // (Shane): at full HP, any missing
+  // Dysangelos P1 and P3 and the Scout,
+  // the left hand (Shane): at full HP, any missing
   // debuff; below it, the lifesteal vigor
   // wand, swapped only for poison when he
   // is not poisoned. P3 keeps the wand of
   // an element he does not resist when he
   // resists vigor.
-  ?foe = dysangelos_bearer | foe = dysangelos_perfected
+  ?foe = dysangelos_bearer | foe = dysangelos_perfected |
+  ^foe = acronian_scout
     c = ""
     ?hp >= maxhp
       c = debuff.Wand("")
@@ -141,7 +150,7 @@ func Ranged()
   // Against a boss the shield only builds
   // armor, which stays when it is put away:
   // once near the cap, a debuff wand.
-  ?foe = boss & ArmorFull()
+  ?Tough() & ArmorFull()
     c = debuff.Wand(wandEl)
     ?string.Size(c) = 0
       c = debuff.AnyWand(wandEl)
@@ -159,8 +168,8 @@ func Ranged()
   // Shield. In P3 the counter element has
   // no shield but ice, so it fell back to
   // the plain Stone shield (Shane).
-  ?string.IndexOf(foe.id, "dysangelos") = 0 &
-  ^gear.Has(tower)
+  ?(string.IndexOf(foe.id, "dysangelos") = 0 |
+  ^foe = acronian_scout) & gear.Has(tower)
     shield = tower
   gear.R(shield)
 
