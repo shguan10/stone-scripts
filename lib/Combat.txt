@@ -166,8 +166,16 @@ func Ranged()
   // stays when it is put away: once near
   // the cap, a debuff wand, in every fight
   // (Shane).
+  // Only a boss is debuffed by what it is
+  // missing: in a crowd the target changes
+  // every few frames, each with its own
+  // debuffs, and the wand followed it
+  // (recorded). Elsewhere the one in hand
+  // stays.
   ?ArmorFull()
-    c = debuff.Wand(wandEl)
+    c = ""
+    ?Tough()
+      c = debuff.Wand(wandEl)
     ?string.Size(c) = 0
       c = debuff.AnyWand(wandEl)
     ?string.Size(c) > 0
