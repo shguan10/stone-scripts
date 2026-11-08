@@ -67,17 +67,23 @@ var capGap = 1
 var capDrop = 2
 // Dysangelos P2's attacks knock armor
 // past capDrop so often that the wands
-// rarely came out (Shane).
+// rarely came out (Shane), and with the
+// tower (cap 14) armor levels off at
+// 11-12 under them (recorded), short of
+// capGap.
+var dysP2Gap = 4
 var dysP2Drop = 8
 var armorUp = false
 
 func ArmorFull()
   ?item.right = shield
     armorCap = maxarmor
+  var gap = capGap
   var drop = capDrop
   ?foe = dysangelos_elementalist
+    gap = dysP2Gap
     drop = dysP2Drop
-  ?armor >= armorCap - capGap
+  ?armor >= armorCap - gap
     armorUp = true
   :?armor < armorCap - drop
     armorUp = false
