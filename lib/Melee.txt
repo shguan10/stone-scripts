@@ -171,7 +171,9 @@ func Dys3Heavy()
 // The socketed hammers are one-handed, so
 // the right hand closes the distance with
 // the Bashing (else Dashing) Shield, and
-// holds a plain shield once in reach.
+// holds the Towering Shield once in reach.
+var inReach = ["tower", "shield -dashing -bashing"]
+
 func Dys3Hammer()
   ?foe.armor <= 0
     ?foe.state ! 32 | foe.damage > 1
@@ -186,7 +188,9 @@ func Dys3Hammer()
     return false
   DashIn()
   gear.L(c)
-  gear.R("shield -dashing -bashing")
+  var r = gear.First(inReach)
+  ?r
+    gear.R(r)
   return true
 
 func Run()
