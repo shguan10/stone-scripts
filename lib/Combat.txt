@@ -44,8 +44,10 @@ func Abilities()
     gear.Cast("wand_poison", "wand_hidden_poison", "L")
   // Explosive Wand, on bosses that stand
   // on the ground: it does not touch the
-  // floating Dysangelos (Shane).
-  ?Tough() & string.IndexOf(foe.id, "dysangelos") < 0
+  // floating Dysangelos, nor the Mushroom
+  // bosses (Shane).
+  ?Tough() & string.IndexOf(foe.id, "dysangelos") < 0 &
+  ^foe ! mushroom_boss
     gear.Cast("wand_fire", "wand_hidden_fire", "L")
   // Feeble, on bosses only. Nagaraja
   // cannot be masked. No range limit:
