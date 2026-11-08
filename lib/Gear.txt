@@ -284,12 +284,14 @@ func Probe()
     return false
   var crit = starCrits[probeI]
   ?probeAt >= 0 & totaltime - probeAt >= probeGap
+    last = "probe " + crit + " *" + probeN + " held " + item.left
     ?HoldsStar(starBases[probeI], probeN)
       resKeys.Add(crit)
       resVals.Add(crit + " *" + probeN)
       found = found + crit + " *" + probeN + ", "
       NextCrit()
     :?probeN <= 0
+      found = found + crit + " none, "
       NextCrit()
     :
       probeN--

@@ -79,7 +79,7 @@ gear.Apply()
   >`0,10,R @item.right@
   >`0,5,cast: @gear.last@
   // The star levels Gear's probe found.
-  >`0,11,stars: @gear.found@
+  >`0,11,stars v3: @gear.found@
   // How many items each shield search
   // matches: names are cut off on screen.
   var nDash
