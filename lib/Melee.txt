@@ -89,6 +89,15 @@ func Pick()
   ?fid = poena
     Hammer("stone")
     return
+  // Morel: the one-handed vigor hammer in
+  // the left while he has armor, then the
+  // vigor sword (Shane).
+  ?fid = mushroom_boss_fat
+    ?foe.armor > 0
+      Main("vigor", "hammer -heavy")
+    :
+      Main("vigor", "sword")
+    return
   ?fid = yeti
     ?foe.state = 133
       Main("fire", "wand")
@@ -132,19 +141,6 @@ func Wield()
   ?l
     gear.L(l)
   gear.R(r)
-
-// The best one-handed hammer for armor
-// (Shane: vigor first), dashing in. False
-// without one.
-var armorHammers = ["vigor hammer -heavy", "fire hammer -heavy", "hammer -heavy"]
-
-func ArmorHammer()
-  var h = gear.First(armorHammers)
-  ?!h
-    return false
-  DashIn()
-  gear.L(h)
-  return true
 
 // The shields dash to the foe on their
 // own when held 11-16 away. Bashing also
